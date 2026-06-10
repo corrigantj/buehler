@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG_PATH="${CONFIG_PATH:-.github/limbic.yaml}"
+CONFIG_PATH="${CONFIG_PATH:-.github/buehler.yaml}"
 OWNER="${OWNER:-}"
 REPO="${REPO:-}"
 
@@ -34,14 +34,14 @@ fi
 # project.exists — board_number must be in config
 if [ -z "$board_number" ]; then
   emit "project.exists" "fail" "No board_number in config" \
-    "Run limbic:setup to create a GitHub Project board"
+    "Run buehler:setup to create a GitHub Project board"
   exit 0
 fi
 
 # Verify the board actually exists
 if ! gh project view "$board_number" --owner "$OWNER" --format json &>/dev/null; then
   emit "project.exists" "fail" "Project board #${board_number} not found for owner ${OWNER}" \
-    "Run limbic:setup to create or reconfigure the project board"
+    "Run buehler:setup to create or reconfigure the project board"
   exit 0
 fi
 emit "project.exists" "pass" "Project board #${board_number} exists"
@@ -78,7 +78,7 @@ if echo "$linked_repos" | grep -qx "${REPO}"; then
   emit "project.linked" "pass" "Project board is linked to ${OWNER}/${REPO}"
 else
   emit "project.linked" "fail" "Project board #${board_number} is not linked to ${OWNER}/${REPO}" \
-    "Run limbic:setup to link the project board to this repository"
+    "Run buehler:setup to link the project board to this repository"
 fi
 
 # project.status_field — verify Status field has expected options

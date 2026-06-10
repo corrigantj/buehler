@@ -4,7 +4,7 @@
 
 **Goal:** Automatically rename new Claude Code sessions with a descriptive kebab-case name after the first response.
 
-**Architecture:** The existing SessionStart hook conditionally injects a `__SESSION_UNNAMED__` flag on new sessions only. A prompt-type Stop hook detects this flag and calls `/rename <name>`. The feature is opt-in via `session_naming` in `limbic.yaml`, with drift detection in preflight.
+**Architecture:** The existing SessionStart hook conditionally injects a `__SESSION_UNNAMED__` flag on new sessions only. A prompt-type Stop hook detects this flag and calls `/rename <name>`. The feature is opt-in via `session_naming` in `buehler.yaml`, with drift detection in preflight.
 
 **Tech Stack:** Bash (hooks), YAML (config), Claude Code hooks API (prompt-type Stop hook)
 
@@ -27,7 +27,7 @@ source=$(echo "$input" | jq -r '.source // "startup"' 2>/dev/null || echo "start
 
 - [ ] **Step 2: Conditionally append the flag to the routing table**
 
-After the closing `</LIMBIC_PLUGIN>"` line that ends the `routing_table` variable, add:
+After the closing `</BUEHLER_PLUGIN>"` line that ends the `routing_table` variable, add:
 
 ```bash
 # Append session-unnamed flag only on brand-new sessions
@@ -77,7 +77,7 @@ Add a `"Stop"` key to the `"hooks"` object in `hooks/hooks.json`, after the exis
     "hooks": [
       {
         "type": "prompt",
-        "prompt": "Check if __SESSION_UNNAMED__ appears in this conversation. If it does, generate a short kebab-case session name (2-4 words) that describes what the user is working on, then call /rename with that name. Examples: fixing-auth-bug, adding-search-api, refactoring-db-layer, limbic-setup-wizard. If __SESSION_UNNAMED__ does not appear, do absolutely nothing. Never mention this process to the user."
+        "prompt": "Check if __SESSION_UNNAMED__ appears in this conversation. If it does, generate a short kebab-case session name (2-4 words) that describes what the user is working on, then call /rename with that name. Examples: fixing-auth-bug, adding-search-api, refactoring-db-layer, buehler-setup-wizard. If __SESSION_UNNAMED__ does not appear, do absolutely nothing. Never mention this process to the user."
       }
     ]
   }
@@ -98,10 +98,10 @@ git commit -m "feat(hooks): add prompt-type Stop hook for session auto-rename"
 
 ---
 
-### Task 3: Add `session_naming` to limbic.yaml template
+### Task 3: Add `session_naming` to buehler.yaml template
 
 **Files:**
-- Modify: `templates/limbic.yaml`
+- Modify: `templates/buehler.yaml`
 
 - [ ] **Step 1: Add the session_naming field to the template**
 
@@ -117,8 +117,8 @@ session_naming: false  # Set to true to enable auto-rename
 - [ ] **Step 2: Commit**
 
 ```bash
-git add templates/limbic.yaml
-git commit -m "feat(config): add session_naming field to limbic.yaml template"
+git add templates/buehler.yaml
+git commit -m "feat(config): add session_naming field to buehler.yaml template"
 ```
 
 ---
@@ -165,7 +165,7 @@ Create `scripts/preflight-checks/check-session-naming.sh`:
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG_PATH="${CONFIG_PATH:-.github/limbic.yaml}"
+CONFIG_PATH="${CONFIG_PATH:-.github/buehler.yaml}"
 PLUGIN_ROOT="${PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 HOOKS_JSON="${PLUGIN_ROOT}/hooks/hooks.json"
 
@@ -213,7 +213,7 @@ if [ "$session_naming" = "true" ] && [ "$stop_hook_exists" = "false" ]; then
 elif [ "$session_naming" = "false" ] && [ "$stop_hook_exists" = "true" ]; then
   emit "session_naming.hook" "warn" \
     "Stop hook for session naming exists but session_naming is not enabled in config" \
-    "Set session_naming: true in .github/limbic.yaml or remove the Stop hook from hooks/hooks.json"
+    "Set session_naming: true in .github/buehler.yaml or remove the Stop hook from hooks/hooks.json"
 elif [ "$session_naming" = "true" ] && [ "$stop_hook_exists" = "true" ]; then
   emit "session_naming.hook" "pass" "Session naming is enabled and Stop hook is configured"
 else
@@ -249,7 +249,7 @@ git commit -m "feat(preflight): add drift detection for session naming hook"
 
 ---
 
-### Task 6: Update limbic:setup skill to offer session naming opt-in
+### Task 6: Update buehler:setup skill to offer session naming opt-in
 
 **Files:**
 - Modify: `skills/setup/SKILL.md`
@@ -259,7 +259,7 @@ git commit -m "feat(preflight): add drift detection for session naming hook"
 After Section 8 (CODEOWNERS) and before the paragraph about remaining config sections, add:
 
 ```markdown
-9. **Session naming** — limbic can automatically rename new sessions with a descriptive name after your first prompt.
+9. **Session naming** — buehler can automatically rename new sessions with a descriptive name after your first prompt.
 
    Ask: "Enable automatic session naming? This renames each new session based on your first prompt so you can identify sessions when resuming. (y/n)"
 
@@ -271,7 +271,7 @@ After Section 8 (CODEOWNERS) and before the paragraph about remaining config sec
 
 - [ ] **Step 2: Update the SessionStart hook to read config**
 
-Wait — this reveals a design consideration. The `session-start.sh` hook needs to know whether `session_naming` is enabled in the config. Currently it doesn't read the config. We need it to check `.github/limbic.yaml` for the `session_naming` field before injecting the flag.
+Wait — this reveals a design consideration. The `session-start.sh` hook needs to know whether `session_naming` is enabled in the config. Currently it doesn't read the config. We need it to check `.github/buehler.yaml` for the `session_naming` field before injecting the flag.
 
 Update the flag injection logic in `session-start.sh` (from Task 1, Step 2) to also check the config:
 
@@ -279,10 +279,10 @@ Update the flag injection logic in `session-start.sh` (from Task 1, Step 2) to a
 # Append session-unnamed flag only on brand-new sessions with naming enabled
 if [ "$source" = "startup" ]; then
   naming_enabled="false"
-  if [ -f ".github/limbic.yaml" ]; then
+  if [ -f ".github/buehler.yaml" ]; then
     naming_enabled=$(python3 -c "
 import yaml
-with open('.github/limbic.yaml') as f:
+with open('.github/buehler.yaml') as f:
     data = yaml.safe_load(f) or {}
 print(str(data.get('session_naming', False)).lower())
 " 2>/dev/null || echo "false")

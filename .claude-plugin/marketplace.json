@@ -1,5 +1,5 @@
 {
-  "name": "limbic",
+  "name": "buehler",
   "owner": {
     "name": "Travis Corrigan",
     "email": "travis@makeheavymetal.com"
@@ -9,7 +9,7 @@
   },
   "plugins": [
     {
-      "name": "limbic",
+      "name": "buehler",
       "source": "./",
       "description": "GitHub Issues-based project management for Claude Code: PRD-to-delivery pipeline with parallel agent execution"
     }

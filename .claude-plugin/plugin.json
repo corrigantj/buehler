@@ -1,12 +1,12 @@
 {
-  "name": "limbic",
+  "name": "buehler",
   "description": "GitHub-native project management for Claude Code: wiki PRDs, versioned epics, two-wave PR model, parallel agent execution, token-based sizing calibration",
   "version": "0.4.0",
   "author": {
     "name": "Travis Corrigan",
     "email": "travis@matterflower.com"
   },
-  "repository": "https://github.com/corrigantj/limbic",
+  "repository": "https://github.com/corrigantj/buehler",
   "license": "MIT",
   "keywords": ["project-management", "github-issues", "github-wiki", "parallel-agents", "worktrees", "skills", "versioned-epics"]
 }

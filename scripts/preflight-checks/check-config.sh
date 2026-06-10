@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG_PATH="${CONFIG_PATH:-.github/limbic.yaml}"
+CONFIG_PATH="${CONFIG_PATH:-.github/buehler.yaml}"
 
 VALID_KEYS="project agents branches worktrees approval_gates commands labels wiki epics validation review sizing"
 
@@ -24,10 +24,10 @@ emit_value() {
 
 # config.exists
 if [ ! -f "$CONFIG_PATH" ]; then
-  emit "repo_root" "fail" "Cannot resolve repo root — .github/limbic.yaml not found" \
-    "Run limbic:setup to create .github/limbic.yaml"
+  emit "repo_root" "fail" "Cannot resolve repo root — .github/buehler.yaml not found" \
+    "Run buehler:setup to create .github/buehler.yaml"
   emit "config.exists" "fail" "Config file not found: ${CONFIG_PATH}" \
-    "Run limbic:setup to create .github/limbic.yaml"
+    "Run buehler:setup to create .github/buehler.yaml"
   exit 0
 fi
 emit "config.exists" "pass" "Config file found: ${CONFIG_PATH}"
@@ -35,7 +35,7 @@ emit "config.exists" "pass" "Config file found: ${CONFIG_PATH}"
 # repo_root — resolve absolute path from config location
 abs_config="$(cd "$(dirname "$CONFIG_PATH")" && pwd)/$(basename "$CONFIG_PATH")"
 repo_root="$(dirname "$(dirname "$abs_config")")"
-emit_value "repo_root" "pass" "Repo root resolved from limbic.yaml location" "$repo_root"
+emit_value "repo_root" "pass" "Repo root resolved from buehler.yaml location" "$repo_root"
 
 # config.yaml_valid
 yaml_result="$(python3 - "$CONFIG_PATH" <<'PYEOF'

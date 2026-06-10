@@ -1,4 +1,4 @@
-# Limbic Bug Workflow
+# Buehler Bug Workflow
 
 /brainstorming we need to explore the creation of an `/issue` skill to help with various patterns
 

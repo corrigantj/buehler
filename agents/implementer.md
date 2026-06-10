@@ -1,7 +1,7 @@
 ---
 name: implementer
 description: |
-  Use this agent to implement a single GitHub Issue in an isolated git worktree. Spawned by dispatch, never by humans directly. Each agent receives an issue number, branches from a feature branch (not main), reads the full context chain (wiki meta page, PRD, mustread issues, parent story, task), implements with TDD, creates a PR targeting the feature branch, records token calibration data, and reports structured results. Follows a 9-phase execution procedure. Examples: <example>Context: dispatch has identified issue #7 as ready for implementation. user: "Implement issue #7: Add user authentication middleware" assistant: "Spawning implementer agent for issue #7 in worktree .worktrees/limbic/7-add-auth-middleware, branching from feature/auth-v1.0" <commentary>dispatch spawns one implementer per ready issue, each in its own worktree branching from the feature branch.</commentary></example>
+  Use this agent to implement a single GitHub Issue in an isolated git worktree. Spawned by dispatch, never by humans directly. Each agent receives an issue number, branches from a feature branch (not main), reads the full context chain (wiki meta page, PRD, mustread issues, parent story, task), implements with TDD, creates a PR targeting the feature branch, records token calibration data, and reports structured results. Follows a 9-phase execution procedure. Examples: <example>Context: dispatch has identified issue #7 as ready for implementation. user: "Implement issue #7: Add user authentication middleware" assistant: "Spawning implementer agent for issue #7 in worktree .worktrees/buehler/7-add-auth-middleware, branching from feature/auth-v1.0" <commentary>dispatch spawns one implementer per ready issue, each in its own worktree branching from the feature branch.</commentary></example>
 model: opus
 permissionMode: dontAsk
 ---
@@ -23,13 +23,13 @@ When spawned, your prompt will contain:
 1. **Issue number** and **title**
 2. **Issue body** (user story, Gherkin acceptance criteria, DoD, implementation notes, files affected)
 3. **Feature branch name** (branch FROM this, PR TO this — NOT main)
-4. **Branch name** (e.g., `limbic/7-add-auth-middleware`)
-5. **Worktree path** (pre-created absolute path, e.g., `/Users/dev/project/.worktrees/limbic/7-add-auth-middleware`)
+4. **Branch name** (e.g., `buehler/7-add-auth-middleware`)
+5. **Worktree path** (pre-created absolute path, e.g., `/Users/dev/project/.worktrees/buehler/7-add-auth-middleware`)
 6. **Repo context** (owner, repo, test/lint/build commands)
 7. **Wiki context** (meta page excerpt, PRD excerpt)
 8. **Must-read context** (bodies of issues tagged `meta:mustread`, if any)
 9. **Sizing info** (estimated `size:` label, token range lower-upper)
-10. **PR body template** (from `limbic:structure`)
+10. **PR body template** (from `buehler:structure`)
 11. **Board IDs** (project node ID, Status field ID, "In Review" option ID, board_number, owner)
 
 ## Core Rules
@@ -180,7 +180,7 @@ If you discover bugs during implementation that are outside your task's scope:
    - **Reproduction Steps:** {how to trigger}
 2. Label the bug issue: `type:bug`, `priority:` (your best estimate), `status:ready`
 3. Do NOT attempt to fix the bug yourself unless it blocks your task's scenarios
-4. The Scenario Acceptance Tracker will be updated by `limbic:review` after merge
+4. The Scenario Acceptance Tracker will be updated by `buehler:review` after merge
 
 ## Failure Handling
 

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a `limbic:issue` skill and `investigator` agent that enable ad-hoc issue creation, investigation, triage, and stabilization tracking within the limbic plugin.
+**Goal:** Add a `buehler:issue` skill and `investigator` agent that enable ad-hoc issue creation, investigation, triage, and stabilization tracking within the buehler plugin.
 
 **Architecture:** Thin skill (SKILL.md) dispatches to an investigator subagent for all real work. Stabilization tickets are created deterministically by a bash script at milestone creation time and verified by a preflight check. Severity labels are added to the hardcoded taxonomy in check-labels.sh.
 
@@ -28,7 +28,7 @@
 | `hooks/session-start.sh` | Modify (lines 25-31) | Add issue routing entry |
 | `skills/status/SKILL.md` | Modify (lines 96-109) | Add stabilization ticket grouping and severity label display |
 | `skills/setup/SKILL.md` | Modify (lines 108-114, 240-248) | Add severity labels to wizard, stabilization remediation to Step 6 |
-| `hooks/preflight.sh` | Modify (line 29) | Add `limbic:issue` to preflight gate |
+| `hooks/preflight.sh` | Modify (line 29) | Add `buehler:issue` to preflight gate |
 | `CLAUDE.md` | Modify | Update plugin structure tree and skill reference table |
 
 ---
@@ -263,12 +263,12 @@ Write `agents/investigator.md` with the following content. The frontmatter follo
 ---
 name: investigator
 description: |
-  Use this agent to investigate a reported issue — spike it into a GitHub Issue, run systematic debugging to find root cause, and recommend severity/priority. Spawned by the limbic:issue skill, never by humans directly. Each agent receives a human's issue description, detects milestone context, checks for duplicates, creates the issue, investigates using superpowers:systematic-debugging, and returns a structured result with severity/priority recommendation. Follows a 10-phase execution procedure. Examples: <example>Context: Human reports a bug during testing. user: "Investigate: the login page crashes when email contains a plus sign" assistant: "Spawning investigator agent for reported issue in milestone auth-system-v1.0" <commentary>The issue skill spawns one investigator per reported issue. The agent creates the GitHub Issue, investigates, and returns a recommendation.</commentary></example>
+  Use this agent to investigate a reported issue — spike it into a GitHub Issue, run systematic debugging to find root cause, and recommend severity/priority. Spawned by the buehler:issue skill, never by humans directly. Each agent receives a human's issue description, detects milestone context, checks for duplicates, creates the issue, investigates using superpowers:systematic-debugging, and returns a structured result with severity/priority recommendation. Follows a 10-phase execution procedure. Examples: <example>Context: Human reports a bug during testing. user: "Investigate: the login page crashes when email contains a plus sign" assistant: "Spawning investigator agent for reported issue in milestone auth-system-v1.0" <commentary>The issue skill spawns one investigator per reported issue. The agent creates the GitHub Issue, investigates, and returns a recommendation.</commentary></example>
 model: sonnet  # Sonnet is sufficient — investigator reads/searches code and writes GH issues, no complex implementation. Opus reserved for implementer's TDD work.
 permissionMode: dontAsk
 ---
 
-You are an **investigator agent** — a subordinate agent spawned by the `limbic:issue` skill. You investigate exactly one reported issue per invocation.
+You are an **investigator agent** — a subordinate agent spawned by the `buehler:issue` skill. You investigate exactly one reported issue per invocation.
 
 ## Identity and Boundaries
 
@@ -453,7 +453,7 @@ If in stabilization context, create as sub-issue of the stabilization ticket:
 ```bash
 # If Sub-issues API available:
 gh api graphql -f query='mutation { addSubIssue(input: {issueId: "{stabilization_ticket_node_id}", subIssueId: "{new_issue_node_id}"}) { issue { id } } }'
-# Fallback: add <!-- limbic:parent #{stabilization_ticket_number} --> to the issue body
+# Fallback: add <!-- buehler:parent #{stabilization_ticket_number} --> to the issue body
 ```
 
 Post comment: "Created #{issue_number} for investigation"
@@ -612,7 +612,7 @@ Reference: `skills/dispatch/implementer-prompt.md` for the template pattern.
 ```markdown
 # Investigator Prompt Template
 
-This template is filled by `limbic:issue` for each reported issue.
+This template is filled by `buehler:issue` for each reported issue.
 The skill replaces all `{placeholders}` before spawning the agent.
 
 ---
@@ -653,7 +653,7 @@ You are an investigator agent. Investigate the following reported issue.
 
 ## Instructions
 
-1. Read the `agents/investigator.md` agent definition in the limbic plugin for your full procedure
+1. Read the `agents/investigator.md` agent definition in the buehler plugin for your full procedure
 2. Follow the 10-phase execution procedure exactly
 3. **Never fix the issue** — investigate, document, recommend only
 4. Dedup check is mandatory before creating any issue
@@ -712,7 +712,7 @@ This skill has two modes:
 
 You MUST create a task for each of these items and complete them in order:
 
-1. **Gather context** — read limbic.yaml, detect milestones, read preflight capability flags (Step 1)
+1. **Gather context** — read buehler.yaml, detect milestones, read preflight capability flags (Step 1)
 2. **Fill prompt and spawn investigator** — fill the investigator-prompt.md template and spawn the agent (Step 2)
 3. **Handle result** — process the agent's structured result, handle approval if interactive (Step 3)
 
@@ -720,7 +720,7 @@ You MUST create a task for each of these items and complete them in order:
 
 #### Step 1: Gather Context
 
-Read `.github/limbic.yaml` from the project root. Extract:
+Read `.github/buehler.yaml` from the project root. Extract:
 - `owner` and `repo` from git remote
 - `base_branch` (default: `main`)
 - Build commands: `test_command`, `lint_command`, `build_command`
@@ -743,7 +743,7 @@ Read preflight capability flags from the PreToolUse hook's additionalContext (JS
 
 ```
 Agent tool:
-  subagent_type: "limbic:investigator"
+  subagent_type: "buehler:investigator"
   prompt: {filled_prompt}
 ```
 
@@ -867,7 +867,7 @@ Tell the human which mode was detected and what will happen.
 
 ```bash
 git add skills/issue/SKILL.md
-git commit -m "feat: add limbic:issue skill definition (investigate + fix modes)"
+git commit -m "feat: add buehler:issue skill definition (investigate + fix modes)"
 ```
 
 ---
@@ -902,7 +902,7 @@ bash scripts/create-stabilization-ticket.sh \
 
 The script is idempotent — if a stabilization ticket already exists for this milestone, it returns the existing issue number.
 
-The stabilization ticket is labeled `meta:ignore` so that `limbic:dispatch` will not attempt to dispatch it for implementation.
+The stabilization ticket is labeled `meta:ignore` so that `buehler:dispatch` will not attempt to dispatch it for implementation.
 ```
 
 - [ ] **Step 3: Commit**
@@ -930,7 +930,7 @@ After the existing step 5 ("If any tasks are `status:in-progress`...") and befor
 ```markdown
 6. Check for open stabilization children:
    - Search for the stabilization ticket: `gh issue list --milestone "{milestone_title}" --search "\"Stabilization: {milestone_title}\" in:title" --json number --jq '.[0].number'`
-   - If a stabilization ticket exists, fetch its sub-issues (or issues with `<!-- limbic:parent #{stabilization_number} -->`)
+   - If a stabilization ticket exists, fetch its sub-issues (or issues with `<!-- buehler:parent #{stabilization_number} -->`)
    - If any stabilization children are still open, report them as blockers
    - Options: "Wait for stabilization to complete", "Exclude remaining issues", "Cancel"
 ```
@@ -955,11 +955,11 @@ Read `hooks/session-start.sh`. Confirm lines 25-31 contain the routing table ent
 
 - [ ] **Step 2: Add the issue routing entry**
 
-After line 31 (`| \"Merge\" / \"Ship it\" / \"Integrate\" | limbic:integrate |`), add:
+After line 31 (`| \"Merge\" / \"Ship it\" / \"Integrate\" | buehler:integrate |`), add:
 
 ```
-| \"File a bug\" / \"Report issue\" / \"Investigate\" | limbic:issue |
-| \"Fix issue #N\" | limbic:issue |
+| \"File a bug\" / \"Report issue\" / \"Investigate\" | buehler:issue |
+| \"Fix issue #N\" | buehler:issue |
 ```
 
 - [ ] **Step 3: Update the flow line**
@@ -977,7 +977,7 @@ Note: the issue skill sits alongside the flow, not in it linearly, since it can 
 
 ```bash
 git add hooks/session-start.sh
-git commit -m "feat(hooks): add limbic:issue routing to session-start"
+git commit -m "feat(hooks): add buehler:issue routing to session-start"
 ```
 
 ---
@@ -1035,14 +1035,14 @@ On line 67, update convention 4 to include severity:
 
 Add the new skill row:
 ```markdown
-| `limbic:issue` | Ad-hoc issue creation, investigation, triage, and fix execution |
+| `buehler:issue` | Ad-hoc issue creation, investigation, triage, and fix execution |
 ```
 
 - [ ] **Step 5: Update Skill Flow**
 
 Add issue to the flow:
 ```
-→ limbic:issue → Ad-hoc issue spike, investigation, triage (anytime)
+→ buehler:issue → Ad-hoc issue spike, investigation, triage (anytime)
 ```
 
 - [ ] **Step 6: Commit**
@@ -1095,8 +1095,8 @@ Add a note: "Display `severity:` labels (if present) before `status:` labels for
 
 In the Recommended Next Actions section (lines 140-146), add:
 ```markdown
-- {If stabilization ticket has open children: "Stabilization in progress — {open_count} issues remaining. Run `limbic:issue` to capture more issues or `limbic:issue fix #N` to fix them."}
-- {If stabilization ticket exists and all children closed: "Stabilization complete — all issues resolved. Safe to run `limbic:integrate`."}
+- {If stabilization ticket has open children: "Stabilization in progress — {open_count} issues remaining. Run `buehler:issue` to capture more issues or `buehler:issue fix #N` to fix them."}
+- {If stabilization ticket exists and all children closed: "Stabilization complete — all issues resolved. Safe to run `buehler:integrate`."}
 ```
 
 - [ ] **Step 5: Commit**
@@ -1142,26 +1142,26 @@ git commit -m "feat(setup): add severity labels to wizard and stabilization reme
 
 ---
 
-### Task 13: Add limbic:issue to Preflight Gate
+### Task 13: Add buehler:issue to Preflight Gate
 
 **Files:**
 - Modify: `hooks/preflight.sh` (line 29)
 
-The `limbic:issue` skill needs preflight capability flags (issue_types_available, sub_issues_available) injected as systemMessage context. It must be gated so the investigator agent receives these flags.
+The `buehler:issue` skill needs preflight capability flags (issue_types_available, sub_issues_available) injected as systemMessage context. It must be gated so the investigator agent receives these flags.
 
 - [ ] **Step 1: Read the file to confirm insertion point**
 
-Read `hooks/preflight.sh`. Confirm line 29 is `limbic:structure|limbic:dispatch|limbic:review|limbic:integrate)`.
+Read `hooks/preflight.sh`. Confirm line 29 is `buehler:structure|buehler:dispatch|buehler:review|buehler:integrate)`.
 
-- [ ] **Step 2: Add limbic:issue to the gate**
+- [ ] **Step 2: Add buehler:issue to the gate**
 
 Change line 29 from:
 ```bash
-  limbic:structure|limbic:dispatch|limbic:review|limbic:integrate)
+  buehler:structure|buehler:dispatch|buehler:review|buehler:integrate)
 ```
 to:
 ```bash
-  limbic:structure|limbic:dispatch|limbic:review|limbic:integrate|limbic:issue)
+  buehler:structure|buehler:dispatch|buehler:review|buehler:integrate|buehler:issue)
 ```
 
 - [ ] **Step 3: Update the comment**
@@ -1179,7 +1179,7 @@ to:
 
 ```bash
 git add hooks/preflight.sh
-git commit -m "feat(preflight): gate limbic:issue for capability flag injection"
+git commit -m "feat(preflight): gate buehler:issue for capability flag injection"
 ```
 
 ---

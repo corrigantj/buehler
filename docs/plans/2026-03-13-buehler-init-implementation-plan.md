@@ -1,14 +1,14 @@
-# limbic:init Implementation Plan
+# buehler:init Implementation Plan
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a setup/config skill (`limbic:init`), modular preflight check scripts, and a PreToolUse hook that gates downstream skills — replacing `using-limbic` entirely.
+**Goal:** Add a setup/config skill (`buehler:init`), modular preflight check scripts, and a PreToolUse hook that gates downstream skills — replacing `using-buehler` entirely.
 
-**Architecture:** Deterministic bash scripts under `scripts/preflight-checks/` validate environment against `.github/limbic.yaml` config and output JSONL. A PreToolUse hook runs these before gated skills, injecting results as `additionalContext` or blocking with `deny`. The `limbic:init` skill provides a conversational wizard for config creation and model-driven remediation for drift.
+**Architecture:** Deterministic bash scripts under `scripts/preflight-checks/` validate environment against `.github/buehler.yaml` config and output JSONL. A PreToolUse hook runs these before gated skills, injecting results as `additionalContext` or blocking with `deny`. The `buehler:init` skill provides a conversational wizard for config creation and model-driven remediation for drift.
 
 **Tech Stack:** Bash (preflight scripts), Markdown (skill definitions), JSON (hooks config)
 
-**Spec:** `docs/plans/2026-03-13-limbic-init-design.md`
+**Spec:** `docs/plans/2026-03-13-buehler-init-design.md`
 
 ---
 
@@ -160,7 +160,7 @@ fi
 
 - [ ] **Step 2: Make executable and test manually**
 
-Run: `chmod +x scripts/preflight-checks/check-repo.sh && OWNER=corrigantj REPO=limbic scripts/preflight-checks/check-repo.sh`
+Run: `chmod +x scripts/preflight-checks/check-repo.sh && OWNER=corrigantj REPO=buehler scripts/preflight-checks/check-repo.sh`
 Expected: JSONL lines for wiki, issue_types, sub_issues
 
 - [ ] **Step 3: Commit**
@@ -181,15 +181,15 @@ git commit -m "feat(preflight): add check-repo.sh — validate wiki, issue types
 
 ```bash
 #!/usr/bin/env bash
-# check-config.sh — Validate .github/limbic.yaml existence and structure
-# Accepts: CONFIG_PATH env var (defaults to .github/limbic.yaml)
+# check-config.sh — Validate .github/buehler.yaml existence and structure
+# Accepts: CONFIG_PATH env var (defaults to .github/buehler.yaml)
 # Output: JSONL
 
 set -euo pipefail
 
-CONFIG_PATH="${CONFIG_PATH:-.github/limbic.yaml}"
+CONFIG_PATH="${CONFIG_PATH:-.github/buehler.yaml}"
 
-# Valid top-level keys from templates/limbic.yaml
+# Valid top-level keys from templates/buehler.yaml
 VALID_KEYS="project agents branches worktrees approval_gates commands labels wiki epics validation review sizing"
 
 emit() {
@@ -205,7 +205,7 @@ emit() {
 
 # Check: config file exists
 if [ ! -f "$CONFIG_PATH" ]; then
-  emit "config.exists" "fail" "Config file not found: ${CONFIG_PATH}" "Run limbic:init to create .github/limbic.yaml"
+  emit "config.exists" "fail" "Config file not found: ${CONFIG_PATH}" "Run buehler:init to create .github/buehler.yaml"
   exit 0
 fi
 
@@ -258,16 +258,16 @@ done <<< "$actual_keys"
 - [ ] **Step 2: Make executable and test manually**
 
 Run: `chmod +x scripts/preflight-checks/check-config.sh && scripts/preflight-checks/check-config.sh`
-Expected: `config.exists` fail (no `.github/limbic.yaml` in the plugin repo itself), then exits
+Expected: `config.exists` fail (no `.github/buehler.yaml` in the plugin repo itself), then exits
 
-Run with a test file: `CONFIG_PATH=templates/limbic.yaml scripts/preflight-checks/check-config.sh`
-Expected: exists pass, yaml_valid pass (templates/limbic.yaml is valid YAML)
+Run with a test file: `CONFIG_PATH=templates/buehler.yaml scripts/preflight-checks/check-config.sh`
+Expected: exists pass, yaml_valid pass (templates/buehler.yaml is valid YAML)
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add scripts/preflight-checks/check-config.sh
-git commit -m "feat(preflight): add check-config.sh — validate limbic.yaml existence and schema"
+git commit -m "feat(preflight): add check-config.sh — validate buehler.yaml existence and schema"
 ```
 
 ---
@@ -295,7 +295,7 @@ set -euo pipefail
 
 OWNER="${OWNER:?OWNER env var required}"
 REPO="${REPO:?REPO env var required}"
-CONFIG_PATH="${CONFIG_PATH:-.github/limbic.yaml}"
+CONFIG_PATH="${CONFIG_PATH:-.github/buehler.yaml}"
 ISSUE_TYPES_AVAILABLE="${ISSUE_TYPES_AVAILABLE:-false}"
 
 emit() {
@@ -385,7 +385,7 @@ fi
 
 - [ ] **Step 2: Make executable and test manually**
 
-Run: `chmod +x scripts/preflight-checks/check-labels.sh && OWNER=corrigantj REPO=limbic scripts/preflight-checks/check-labels.sh`
+Run: `chmod +x scripts/preflight-checks/check-labels.sh && OWNER=corrigantj REPO=buehler scripts/preflight-checks/check-labels.sh`
 Expected: Mix of pass/fail depending on what labels exist in the repo
 
 - [ ] **Step 3: Commit**
@@ -440,20 +440,20 @@ if git clone --depth 1 "https://github.com/${OWNER}/${REPO}.wiki.git" "$tmp_wiki
   if [ -f "$tmp_wiki/wiki/Home.md" ]; then
     emit "wiki.home_page" "pass" "Home.md exists"
   else
-    emit "wiki.home_page" "fail" "Home.md does not exist" "Create a Home.md wiki page via the GitHub wiki UI or limbic:init remediation"
+    emit "wiki.home_page" "fail" "Home.md does not exist" "Create a Home.md wiki page via the GitHub wiki UI or buehler:init remediation"
   fi
 
   # Check: templates (warn only — created by structure on first epic)
   if [ -f "$tmp_wiki/wiki/_Meta-Template.md" ]; then
     emit "wiki.meta_template" "pass" "_Meta-Template.md exists"
   else
-    emit "wiki.meta_template" "warn" "_Meta-Template.md does not exist yet — will be created by limbic:structure on first epic"
+    emit "wiki.meta_template" "warn" "_Meta-Template.md does not exist yet — will be created by buehler:structure on first epic"
   fi
 
   if [ -f "$tmp_wiki/wiki/_PRD-Template.md" ]; then
     emit "wiki.prd_template" "pass" "_PRD-Template.md exists"
   else
-    emit "wiki.prd_template" "warn" "_PRD-Template.md does not exist yet — will be created by limbic:structure on first epic"
+    emit "wiki.prd_template" "warn" "_PRD-Template.md does not exist yet — will be created by buehler:structure on first epic"
   fi
 else
   emit "wiki.cloneable" "fail" "Cannot clone wiki repo" "Enable wiki in repo Settings > General > Features > Wiki, then create at least one page"
@@ -462,7 +462,7 @@ fi
 
 - [ ] **Step 2: Make executable and test manually**
 
-Run: `chmod +x scripts/preflight-checks/check-wiki.sh && OWNER=corrigantj REPO=limbic scripts/preflight-checks/check-wiki.sh`
+Run: `chmod +x scripts/preflight-checks/check-wiki.sh && OWNER=corrigantj REPO=buehler scripts/preflight-checks/check-wiki.sh`
 Expected: JSONL lines — cloneable pass/fail, then page checks if cloneable
 
 - [ ] **Step 3: Commit**
@@ -490,7 +490,7 @@ git commit -m "feat(preflight): add check-wiki.sh — validate wiki clone, Home.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_PATH=".github/limbic.yaml"
+CONFIG_PATH=".github/buehler.yaml"
 SINGLE_CHECK=""
 
 # Parse args
@@ -580,7 +580,7 @@ if $has_fail; then exit 1; else exit 0; fi
 - [ ] **Step 2: Make executable and test manually**
 
 Run: `chmod +x scripts/preflight-checks/runner.sh && scripts/preflight-checks/runner.sh`
-Expected: Aggregated JSONL from all checks. Exit code 1 if any failures (likely config.exists fail since no `.github/limbic.yaml` in plugin repo).
+Expected: Aggregated JSONL from all checks. Exit code 1 if any failures (likely config.exists fail since no `.github/buehler.yaml` in plugin repo).
 
 Run single check: `scripts/preflight-checks/runner.sh --check env`
 Expected: Only env check output.
@@ -609,7 +609,7 @@ This script receives the Skill tool input on stdin, parses the skill name, and g
 #!/usr/bin/env bash
 # preflight.sh — PreToolUse hook for Skill tool invocations
 # Gates: structure, dispatch, review, integrate
-# Passes: init, status, and all non-limbic skills
+# Passes: init, status, and all non-buehler skills
 
 set -euo pipefail
 
@@ -632,9 +632,9 @@ except Exception:
     print('')
 " 2>/dev/null)
 
-# Pass through non-limbic skills and ungated limbic skills
+# Pass through non-buehler skills and ungated buehler skills
 case "$skill_name" in
-  limbic:structure|limbic:dispatch|limbic:review|limbic:integrate)
+  buehler:structure|buehler:dispatch|buehler:review|buehler:integrate)
     # Gated — run preflight
     ;;
   *)
@@ -677,13 +677,13 @@ exit 0
 Test with a gated skill:
 ```bash
 chmod +x hooks/preflight.sh
-echo '{"skill":"limbic:structure"}' | hooks/preflight.sh
+echo '{"skill":"buehler:structure"}' | hooks/preflight.sh
 ```
-Expected: JSON with `decision: deny` (since no `.github/limbic.yaml` exists) and JSONL in reason.
+Expected: JSON with `decision: deny` (since no `.github/buehler.yaml` exists) and JSONL in reason.
 
 Test with an ungated skill:
 ```bash
-echo '{"skill":"limbic:status"}' | hooks/preflight.sh
+echo '{"skill":"buehler:status"}' | hooks/preflight.sh
 ```
 Expected: `{"decision":"allow"}`
 
@@ -691,7 +691,7 @@ Expected: `{"decision":"allow"}`
 
 ```bash
 git add hooks/preflight.sh
-git commit -m "feat(hooks): add preflight.sh — PreToolUse gate for limbic skills"
+git commit -m "feat(hooks): add preflight.sh — PreToolUse gate for buehler skills"
 ```
 
 ---
@@ -773,14 +773,14 @@ git commit -m "feat(hooks): add PreToolUse hook entry for preflight gating"
 
 - [ ] **Step 1: Read current session-start.sh**
 
-Currently reads the full `using-limbic/SKILL.md` content and injects it into context. Replace with a slim routing table.
+Currently reads the full `using-buehler/SKILL.md` content and injects it into context. Replace with a slim routing table.
 
 - [ ] **Step 2: Replace the script**
 
 ```bash
 #!/usr/bin/env bash
-# SessionStart hook for limbic plugin
-# Injects a slim routing table — replaces the old using-limbic skill injection
+# SessionStart hook for buehler plugin
+# Injects a slim routing table — replaces the old using-buehler skill injection
 
 set -euo pipefail
 
@@ -795,20 +795,20 @@ escape_for_json() {
     printf '%s' "$s"
 }
 
-routing_table="<LIMBIC_PLUGIN>
-You have project management capabilities via the limbic plugin.
+routing_table="<BUEHLER_PLUGIN>
+You have project management capabilities via the buehler plugin.
 
 ## Skill Routing
 
 | User Intent | Skill |
 |---|---|
-| First-time setup / \"init\" / fix drift | limbic:init |
-| New feature / project / \"plan this\" | superpowers:brainstorming then limbic:structure |
-| \"Break this down\" / has a PRD | limbic:structure |
-| \"Start working\" / \"Dispatch\" | limbic:dispatch |
-| \"What's the status?\" | limbic:status |
-| \"Review PRs\" / \"Check feedback\" | limbic:review |
-| \"Merge\" / \"Ship it\" / \"Integrate\" | limbic:integrate |
+| First-time setup / \"init\" / fix drift | buehler:init |
+| New feature / project / \"plan this\" | superpowers:brainstorming then buehler:structure |
+| \"Break this down\" / has a PRD | buehler:structure |
+| \"Start working\" / \"Dispatch\" | buehler:dispatch |
+| \"What's the status?\" | buehler:status |
+| \"Review PRs\" / \"Check feedback\" | buehler:review |
+| \"Merge\" / \"Ship it\" / \"Integrate\" | buehler:integrate |
 
 ## Flow
 
@@ -818,7 +818,7 @@ init -> brainstorming -> structure -> dispatch -> status -> review -> integrate
 
 A hook runs preflight checks before structure, dispatch, review, and integrate (not init or status).
 If checks fail, read the JSONL report and remediate before proceeding.
-</LIMBIC_PLUGIN>"
+</BUEHLER_PLUGIN>"
 
 escaped=$(escape_for_json "$routing_table")
 
@@ -844,14 +844,14 @@ Expected: JSON output with the routing table embedded in `additional_context`
 
 ```bash
 git add hooks/session-start.sh
-git commit -m "refactor(hooks): replace using-limbic injection with slim routing table"
+git commit -m "refactor(hooks): replace using-buehler injection with slim routing table"
 ```
 
 ---
 
-## Chunk 3: Init Skill + Delete using-limbic
+## Chunk 3: Init Skill + Delete using-buehler
 
-### Task 10: Create limbic:init skill
+### Task 10: Create buehler:init skill
 
 **Files:**
 - Create: `skills/init/SKILL.md`
@@ -861,7 +861,7 @@ git commit -m "refactor(hooks): replace using-limbic injection with slim routing
 ```markdown
 ---
 name: init
-description: Set up limbic for a repository — interactive config wizard, preflight checks, drift detection, and model-driven remediation
+description: Set up buehler for a repository — interactive config wizard, preflight checks, drift detection, and model-driven remediation
 ---
 
 # init — Setup, Configuration & Preflight
@@ -871,7 +871,7 @@ description: Set up limbic for a repository — interactive config wizard, prefl
 ## Inputs
 
 - Access to the project repository (gh CLI)
-- Optionally: existing `.github/limbic.yaml`
+- Optionally: existing `.github/buehler.yaml`
 
 ## Checklist
 
@@ -900,7 +900,7 @@ git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/ori
 
 ### Step 2: Check for Existing Config
 
-Check if `.github/limbic.yaml` exists:
+Check if `.github/buehler.yaml` exists:
 
 - **Exists** → go to Step 4 (preflight path)
 - **Does not exist** → go to Step 3 (wizard path)
@@ -963,9 +963,9 @@ Present recommended defaults section by section. For each section, show the defa
      before_wiki_update: false
    ```
 
-Remaining config sections (`branches`, `worktrees`, `commands`, `epics`, `validation`, `review`) use sensible defaults and can be customized by editing `.github/limbic.yaml` directly after init completes.
+Remaining config sections (`branches`, `worktrees`, `commands`, `epics`, `validation`, `review`) use sensible defaults and can be customized by editing `.github/buehler.yaml` directly after init completes.
 
-After all sections are confirmed, write `.github/limbic.yaml` and proceed to Step 5.
+After all sections are confirmed, write `.github/buehler.yaml` and proceed to Step 5.
 
 ### Step 4: Preflight Path (Config Exists)
 
@@ -1030,7 +1030,7 @@ Read each failed check's `fix` field. Decide per-check:
 - Missing labels → run the `gh label create` commands from the `fix` fields
 - Missing Home.md → clone wiki, create Home.md with a landing page, commit and push
 - Missing config → should not happen here (wizard creates it), but generate defaults if needed
-- Deprecated `merge` key in config → suggest removing it: "The `merge` section is no longer used — merge strategy is now hardcoded. Remove the `merge:` block from your `.github/limbic.yaml`."
+- Deprecated `merge` key in config → suggest removing it: "The `merge` section is no longer used — merge strategy is now hardcoded. Remove the `merge:` block from your `.github/buehler.yaml`."
 
 **Needs human action:**
 - Wiki not enabled → tell the user: "Wiki is not enabled. Enable it in repo Settings > General > Features > Wiki. Let me know when it's done and I'll re-check."
@@ -1046,7 +1046,7 @@ Re-run the preflight to confirm all checks now pass:
 {PLUGIN_ROOT}/scripts/preflight-checks/runner.sh
 ```
 
-- **All green:** "limbic is fully configured. You're ready to go."
+- **All green:** "buehler is fully configured. You're ready to go."
 - **Still has failures:** Report remaining issues. If they're human-fixable, wait. If model-fixable items failed, investigate and retry (max 3 attempts).
 
 ## Important Rules
@@ -1056,34 +1056,34 @@ Re-run the preflight to confirm all checks now pass:
 3. **Wizard is conversational** — one section at a time, confirm before moving on
 4. **Config is the source of truth** — preflight checks desired state against config, not hardcoded values
 5. **Labels use `:` delimiter** — never `/`
-6. **All skill references** use `limbic:{skill}` format
+6. **All skill references** use `buehler:{skill}` format
 ```
 
 - [ ] **Step 2: Commit**
 
 ```bash
 git add skills/init/SKILL.md
-git commit -m "feat(skills): add limbic:init — setup wizard, preflight runner, drift remediation"
+git commit -m "feat(skills): add buehler:init — setup wizard, preflight runner, drift remediation"
 ```
 
 ---
 
-### Task 11: Delete using-limbic skill
+### Task 11: Delete using-buehler skill
 
 **Files:**
-- Delete: `skills/using-limbic/SKILL.md`
+- Delete: `skills/using-buehler/SKILL.md`
 
-- [ ] **Step 1: Remove the using-limbic skill directory**
+- [ ] **Step 1: Remove the using-buehler skill directory**
 
 ```bash
-rm -rf skills/using-limbic/
+rm -rf skills/using-buehler/
 ```
 
 - [ ] **Step 2: Commit**
 
 ```bash
-git add -A skills/using-limbic/
-git commit -m "refactor: delete using-limbic skill — replaced by init + session-start routing table"
+git add -A skills/using-buehler/
+git commit -m "refactor: delete using-buehler skill — replaced by init + session-start routing table"
 ```
 
 ---
@@ -1124,7 +1124,7 @@ Create `epic:{epic}` with color `0052cc` (blue) if it doesn't already exist:
 gh label create "epic:{epic}" --color "0052cc" --description "Epic: {Epic Name}" --force
 \`\`\`
 
-Also create any custom labels from `limbic.yaml` that are specific to this epic.
+Also create any custom labels from `buehler.yaml` that are specific to this epic.
 ```
 
 - [ ] **Step 4: Delete Step 7 (taxonomy creation) entirely**
@@ -1272,14 +1272,14 @@ git commit -m "refactor(integrate): hardcode squash merge strategy, remove merge
 
 ---
 
-### Task 15: Remove merge section from limbic.yaml template
+### Task 15: Remove merge section from buehler.yaml template
 
 **Files:**
-- Modify: `templates/limbic.yaml`
+- Modify: `templates/buehler.yaml`
 
 - [ ] **Step 1: Read and identify the merge section**
 
-Lines 38-47 in `templates/limbic.yaml`:
+Lines 38-47 in `templates/buehler.yaml`:
 ```yaml
 # ─── Merge strategy ─────────────────────────────────────────────────────────
 # Two-wave model uses separate strategies for task PRs and feature PRs.
@@ -1300,7 +1300,7 @@ Delete lines 38-47 (the merge section including its header comment).
 - [ ] **Step 3: Commit**
 
 ```bash
-git add templates/limbic.yaml
+git add templates/buehler.yaml
 git commit -m "refactor(config): remove merge section — strategy is now hardcoded"
 ```
 
@@ -1315,14 +1315,14 @@ git commit -m "refactor(config): remove merge section — strategy is now hardco
 
 - [ ] **Step 1: Update Plugin Structure tree**
 
-Add `scripts/preflight-checks/` and `skills/init/`, remove `skills/using-limbic/`.
+Add `scripts/preflight-checks/` and `skills/init/`, remove `skills/using-buehler/`.
 
 Replace the Plugin Structure section with:
 ```
 ## Plugin Structure
 
 \`\`\`
-limbic/
+buehler/
 ├── .claude-plugin/plugin.json     # Plugin metadata (v0.2.0)
 ├── hooks/                         # SessionStart + PreToolUse hooks
 │   ├── hooks.json                 # Hook event definitions (SessionStart, PreToolUse)
@@ -1333,7 +1333,7 @@ limbic/
 │       ├── runner.sh              # Orchestrator — runs all checks, aggregates output
 │       ├── check-env.sh           # gh CLI, git repo, GitHub remote
 │       ├── check-repo.sh          # Wiki, Issue Types API, Sub-issues API
-│       ├── check-config.sh        # limbic.yaml existence and schema
+│       ├── check-config.sh        # buehler.yaml existence and schema
 │       ├── check-labels.sh        # Label taxonomy matches config
 │       └── check-wiki.sh          # Wiki clone, Home page, templates
 ├── skills/                        # 6 skills: init, structure, dispatch, status, review, integrate
@@ -1353,7 +1353,7 @@ limbic/
 │   └── integrate/                 # Feature→main PR, retro, wiki update, calibration
 │       └── retro-template.md
 ├── agents/implementer.md          # Subordinate agent: 9-phase TDD workflow
-├── templates/limbic.yaml          # Configuration schema with sizing buckets
+├── templates/buehler.yaml          # Configuration schema with sizing buckets
 ├── CLAUDE.md
 ├── LICENSE
 └── README.md
@@ -1365,17 +1365,17 @@ limbic/
 Replace:
 ```
 brainstorming → PRD file
-→ limbic:structure → ...
+→ buehler:structure → ...
 ```
 With:
 ```
-limbic:init → .github/limbic.yaml + GitHub artifacts (labels, wiki)
+buehler:init → .github/buehler.yaml + GitHub artifacts (labels, wiki)
 → brainstorming → PRD file
-→ limbic:structure → Wiki PRD + Meta page + Milestone + Issues + feature branch
-→ limbic:dispatch → Spawn agents (task branches off feature branch)
-→ limbic:status → Progress dashboard (run anytime, crash recovery)
-→ limbic:review → Task PRs reviewed, merged into feature branch, lessons learned
-→ limbic:integrate → Feature branch → main PR, retro, wiki update, close milestone
+→ buehler:structure → Wiki PRD + Meta page + Milestone + Issues + feature branch
+→ buehler:dispatch → Spawn agents (task branches off feature branch)
+→ buehler:status → Progress dashboard (run anytime, crash recovery)
+→ buehler:review → Task PRs reviewed, merged into feature branch, lessons learned
+→ buehler:integrate → Feature branch → main PR, retro, wiki update, close milestone
 ```
 
 - [ ] **Step 3: Update Key Conventions**
@@ -1396,27 +1396,27 @@ Replace the Prerequisites section:
 - **gh CLI** — for labels, milestones, wiki, and operations not covered by MCP
 - **Wiki enabled** on the GitHub repository
 
-Run `limbic:init` to verify all prerequisites and configure the repository.
+Run `buehler:init` to verify all prerequisites and configure the repository.
 ```
 
 - [ ] **Step 5: Update Skill Reference table**
 
-Replace `limbic:using-limbic` row with `limbic:init`:
+Replace `buehler:using-buehler` row with `buehler:init`:
 
 | Skill | When to Use |
 |-------|------------|
-| `limbic:init` | Setup, configuration, preflight checks, drift detection and remediation |
-| `limbic:structure` | Convert a PRD into Wiki pages + Milestone + Issues + feature branch |
-| `limbic:dispatch` | Spawn parallel implementer agents for ready issues |
-| `limbic:status` | View progress dashboard from GitHub state |
-| `limbic:review` | Poll task PRs for reviews, merge into feature branch, capture lessons learned |
-| `limbic:integrate` | Merge feature branch to main, create retro, update wiki, calibrate sizing |
+| `buehler:init` | Setup, configuration, preflight checks, drift detection and remediation |
+| `buehler:structure` | Convert a PRD into Wiki pages + Milestone + Issues + feature branch |
+| `buehler:dispatch` | Spawn parallel implementer agents for ready issues |
+| `buehler:status` | View progress dashboard from GitHub state |
+| `buehler:review` | Poll task PRs for reviews, merge into feature branch, capture lessons learned |
+| `buehler:integrate` | Merge feature branch to main, create retro, update wiki, calibrate sizing |
 
 - [ ] **Step 6: Commit**
 
 ```bash
 git add CLAUDE.md
-git commit -m "docs: update CLAUDE.md for init skill, preflight hooks, remove using-limbic references"
+git commit -m "docs: update CLAUDE.md for init skill, preflight hooks, remove using-buehler references"
 ```
 
 ---
@@ -1428,11 +1428,11 @@ git commit -m "docs: update CLAUDE.md for init skill, preflight hooks, remove us
 
 - [ ] **Step 1: Verify if description needs updating**
 
-Read `.claude-plugin/plugin.json`. If the description mentions `using-limbic` or omits `init`, update it.
+Read `.claude-plugin/plugin.json`. If the description mentions `using-buehler` or omits `init`, update it.
 
 - [ ] **Step 2: Update if needed**
 
-The current description is fine — it describes capabilities, not specific skill names. No change needed unless `using-limbic` is mentioned.
+The current description is fine — it describes capabilities, not specific skill names. No change needed unless `using-buehler` is mentioned.
 
 - [ ] **Step 3: Commit (only if changed)**
 
@@ -1453,10 +1453,10 @@ ls -la skills/init/SKILL.md
 ls -la hooks/preflight.sh
 ```
 
-- [ ] **Step 2: Verify using-limbic is deleted**
+- [ ] **Step 2: Verify using-buehler is deleted**
 
 ```bash
-ls skills/using-limbic/ 2>&1 || echo "Correctly deleted"
+ls skills/using-buehler/ 2>&1 || echo "Correctly deleted"
 ```
 
 - [ ] **Step 3: Run the full preflight suite**
@@ -1469,17 +1469,17 @@ Expected: JSONL output. Failures for missing config and labels are expected in t
 - [ ] **Step 4: Test the preflight hook**
 
 ```bash
-echo '{"skill":"limbic:structure"}' | hooks/preflight.sh
-echo '{"skill":"limbic:status"}' | hooks/preflight.sh
+echo '{"skill":"buehler:structure"}' | hooks/preflight.sh
+echo '{"skill":"buehler:status"}' | hooks/preflight.sh
 echo '{"skill":"superpowers:brainstorming"}' | hooks/preflight.sh
 ```
-Expected: deny for structure, allow for status, allow for non-limbic skills.
+Expected: deny for structure, allow for status, allow for non-buehler skills.
 
 - [ ] **Step 5: Verify no broken cross-references**
 
-Search for any remaining references to `using-limbic` across the codebase:
+Search for any remaining references to `using-buehler` across the codebase:
 ```bash
-grep -r "using-limbic" skills/ hooks/ CLAUDE.md templates/ agents/ 2>/dev/null || echo "No stale references"
+grep -r "using-buehler" skills/ hooks/ CLAUDE.md templates/ agents/ 2>/dev/null || echo "No stale references"
 ```
 
 Search for any remaining references to `merge.task_strategy` or `merge.feature_strategy`:

@@ -11,11 +11,11 @@ description: Use when all task PRs are merged into the feature branch — create
 
 - A GitHub Milestone with all task PRs merged into the feature branch (wave 1 complete)
 - Access to the project repository (GitHub MCP + gh CLI)
-- `.github/limbic.yaml` for configuration values
+- `.github/buehler.yaml` for configuration values
 
 ## Two-Wave Model Context
 
-In limbic, merging happens in two waves:
+In buehler, merging happens in two waves:
 - **Wave 1 (review):** Task branches merge into the feature branch via topological sort
 - **Wave 2 (integrate — this skill):** The feature branch merges into the base branch (main)
 
@@ -51,7 +51,7 @@ Verify that wave 1 is complete — all task PRs should already be merged into th
    - Options: "Wait for completion", "Exclude from integration", "Cancel"
 6. Check for open stabilization children:
    - Search for the stabilization ticket: `gh issue list --milestone "{milestone_title}" --search "\"Stabilization: {milestone_title}\" in:title" --json number --jq '.[0].number'`
-   - If a stabilization ticket exists, fetch its sub-issues (or issues with `<!-- limbic:parent #{stabilization_number} -->`)
+   - If a stabilization ticket exists, fetch its sub-issues (or issues with `<!-- buehler:parent #{stabilization_number} -->`)
    - If any stabilization children are still open, report them as blockers
    - Options: "Wait for stabilization to complete", "Exclude remaining issues", "Cancel"
 
@@ -62,7 +62,7 @@ gh issue list --milestone "{milestone_title}" --state open --json number,title,l
 
 ### Step 2: Build Merge Order
 
-In the two-wave model, there is typically **one feature PR** (feature→main). The per-issue topological sort is handled by `limbic:review` in wave 1.
+In the two-wave model, there is typically **one feature PR** (feature→main). The per-issue topological sort is handled by `buehler:review` in wave 1.
 
 If multiple feature branches are ready (multiple epics), use dependency ordering between epics:
 - Parse epic-level dependencies from PRD wiki pages
@@ -118,9 +118,9 @@ PRD: [PRD-{epic}-v{Major}](../../wiki/PRD-{epic}-v{Major})
 
 ### Step 5: Poll for Review
 
-Use the same polling mechanism as `limbic:review` but for the feature→main PR.
+Use the same polling mechanism as `buehler:review` but for the feature→main PR.
 
-Read `polling-prompt.md` from the `limbic:review` skill directory and fill in the template with the feature PR number.
+Read `polling-prompt.md` from the `buehler:review` skill directory and fill in the template with the feature PR number.
 
 1. Spawn a polling sub-agent using the filled template (use `review.polling_model` from config, default haiku)
 2. Poll at `review.polling_interval` seconds (default 60), timeout at `review.polling_timeout` (default 3600)
@@ -185,7 +185,7 @@ Feature branch merged to {base_branch}.
 
 **Options:**
 1. **Close milestone** — run retro, update wiki, create calibration PR, close
-2. **Keep open** — more work planned for this epic version (invoke `limbic:dispatch` for next minor)
+2. **Keep open** — more work planned for this epic version (invoke `buehler:dispatch` for next minor)
 ```
 
 If user chooses to keep open, stop here. Otherwise proceed with steps 8-14.
@@ -260,11 +260,11 @@ Using the token data collected in Step 8:
 2. Calculate delta percentages for each task
 3. Identify systematic drift (e.g., consistent underestimation of a size bucket)
 4. Generate recommended bucket adjustments if data shows consistent drift
-5. Create a branch and PR modifying the `sizing.buckets` section of `.github/limbic.yaml`:
+5. Create a branch and PR modifying the `sizing.buckets` section of `.github/buehler.yaml`:
    ```bash
    git checkout -b calibrate/sizing-{epic}-v{Major}.{Minor} origin/{base_branch}
-   # Apply sizing bucket updates to .github/limbic.yaml
-   git add .github/limbic.yaml
+   # Apply sizing bucket updates to .github/buehler.yaml
+   git add .github/buehler.yaml
    git commit -m "chore: calibrate sizing buckets from {epic} v{Major}.{Minor} retro"
    git push -u origin calibrate/sizing-{epic}-v{Major}.{Minor}
    gh pr create --base {base_branch} \
@@ -357,4 +357,4 @@ git worktree prune
 7. **Always create sizing calibration PR** with evidence table
 8. **PRD status → Approved** after merge
 9. All label references use `:` delimiter (e.g., `status:done`, `size:m`)
-10. All skill references use `limbic:{skill}` format
+10. All skill references use `buehler:{skill}` format

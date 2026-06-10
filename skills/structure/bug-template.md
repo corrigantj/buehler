@@ -1,6 +1,6 @@
 # Bug Template
 
-Used by `limbic:structure` or implementer agents when filing bug sub-issues under a product story. Replace `{placeholders}` with actual content.
+Used by `buehler:structure` or implementer agents when filing bug sub-issues under a product story. Replace `{placeholders}` with actual content.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Set up limbic for a repository — interactive config wizard, preflight checks, drift detection, and model-driven remediation
+description: Set up buehler for a repository — interactive config wizard, preflight checks, drift detection, and model-driven remediation
 ---
 
 # setup — Setup, Configuration & Preflight
@@ -10,7 +10,7 @@ description: Set up limbic for a repository — interactive config wizard, prefl
 ## Inputs
 
 - Access to the project repository (gh CLI)
-- Optionally: existing `.github/limbic.yaml`
+- Optionally: existing `.github/buehler.yaml`
 
 ## Checklist
 
@@ -39,7 +39,7 @@ git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/ori
 
 ### Step 2: Check for Existing Config
 
-Check if `.github/limbic.yaml` exists:
+Check if `.github/buehler.yaml` exists:
 
 - **Exists** → go to Step 4 (preflight path)
 - **Does not exist** → go to Step 3 (wizard path)
@@ -128,13 +128,13 @@ Present recommended defaults section by section. For each section, show the defa
    - Severity: critical, major, minor, trivial
    - Ask: "Any custom labels to add?"
 
-6. **Approval gates** — these control where limbic pauses to ask for your permission. Present as a checklist of plain-language descriptions (not raw YAML). Default is fully autonomous (no gates enabled):
+6. **Approval gates** — these control where buehler pauses to ask for your permission. Present as a checklist of plain-language descriptions (not raw YAML). Default is fully autonomous (no gates enabled):
    - **Pause before dispatching agents** — ask before spawning implementation agents (default: off)
    - **Pause before merging PRs** — ask before merging approved task PRs into the feature branch (default: off)
    - **Pause before closing milestones** — ask before closing the milestone during integrate (default: off)
    - **Pause before updating wiki** — ask before pushing changes to the project wiki (default: off)
 
-   Ask: "These are all off by default, meaning limbic will run autonomously. Want to enable any of these checkpoints?"
+   Ask: "These are all off by default, meaning buehler will run autonomously. Want to enable any of these checkpoints?"
 
    Map selections back to `approval_gates` keys in the generated YAML:
    ```yaml
@@ -145,7 +145,7 @@ Present recommended defaults section by section. For each section, show the defa
      before_wiki_update: false   # "Pause before updating wiki"
    ```
 
-7. **Subagent permissions** — limbic agents need shell access to run git, tests, and linting.
+7. **Subagent permissions** — buehler agents need shell access to run git, tests, and linting.
 
    Auto-detect the project's stack using the same heuristics as build command detection:
    - Always include: `Bash(git:*)`, `Bash(gh:*)`, `Bash(gh issue *)`
@@ -157,7 +157,7 @@ Present recommended defaults section by section. For each section, show the defa
 
    Present the proposed permissions:
    ```
-   limbic agents need shell access to run git, tests, and linting in parallel.
+   buehler agents need shell access to run git, tests, and linting in parallel.
    Based on your project, here are the permissions I'd add to .claude/settings.json:
 
      - Bash(git:*)
@@ -172,7 +172,7 @@ Present recommended defaults section by section. For each section, show the defa
 
    After confirmation, read `.claude/settings.json` if it exists, merge the new permissions into the `permissions.allow` array (preserving existing entries), and write it back using the Write tool.
 
-8. **CODEOWNERS** — limbic requires human review approval before merging PRs (`review.require_codeowners` defaults to true). This means a CODEOWNERS file must exist.
+8. **CODEOWNERS** — buehler requires human review approval before merging PRs (`review.require_codeowners` defaults to true). This means a CODEOWNERS file must exist.
 
    Check for existing CODEOWNERS in standard locations (`CODEOWNERS`, `.github/CODEOWNERS`, `docs/CODEOWNERS`):
    - If found: "Found CODEOWNERS at {path}. Using existing file."
@@ -186,11 +186,11 @@ Present recommended defaults section by section. For each section, show the defa
      - Ask: "Who should be listed as code owners? Default is @{owner} for all files. You can add team-specific rules later."
      - After confirmation, write `.github/CODEOWNERS` using the Write tool
 
-   If the user explicitly opts out of CODEOWNERS, set `review.require_codeowners: false` in the config and warn: "Without CODEOWNERS, limbic may self-merge PRs without human review."
+   If the user explicitly opts out of CODEOWNERS, set `review.require_codeowners: false` in the config and warn: "Without CODEOWNERS, buehler may self-merge PRs without human review."
 
-Remaining config sections (`branches`, `worktrees`, `commands`, `epics`, `validation`, `review`) use sensible defaults and can be customized by editing `.github/limbic.yaml` directly after setup completes.
+Remaining config sections (`branches`, `worktrees`, `commands`, `epics`, `validation`, `review`) use sensible defaults and can be customized by editing `.github/buehler.yaml` directly after setup completes.
 
-After all sections are confirmed, write `.github/limbic.yaml` using the Write tool directly (do NOT run `mkdir` first — Write creates parent directories automatically, and a separate `mkdir` triggers an unnecessary permission prompt).
+After all sections are confirmed, write `.github/buehler.yaml` using the Write tool directly (do NOT run `mkdir` first — Write creates parent directories automatically, and a separate `mkdir` triggers an unnecessary permission prompt).
 
 ### Step 4: Preflight Path (Config Exists)
 
@@ -255,7 +255,7 @@ Read each failed check's `fix` field. Decide per-check:
 - Missing labels → run the `gh label create` commands from the `fix` fields
 - Missing Home.md → clone wiki, create Home.md with a landing page, commit and push
 - Missing config → should not happen here (wizard creates it), but generate defaults if needed
-- Deprecated `merge` key in config → suggest removing it: "The `merge` section is no longer used — merge strategy is now hardcoded. Remove the `merge:` block from your `.github/limbic.yaml`."
+- Deprecated `merge` key in config → suggest removing it: "The `merge` section is no longer used — merge strategy is now hardcoded. Remove the `merge:` block from your `.github/buehler.yaml`."
 - Missing board → create the board and link it to the repo using the commands from the wizard Section 2
 - Board not linked → run the `linkProjectV2ToRepository` GraphQL mutation
 - Missing .wiki/ in .gitignore → append `.wiki/` (or configured `wiki.directory` value) to `.gitignore`
@@ -278,7 +278,7 @@ Re-run the preflight to confirm all checks now pass:
 {PLUGIN_ROOT}/scripts/preflight-checks/runner.sh
 ```
 
-- **All green:** "limbic is fully configured. You're ready to go. Next step: describe what you want to build (routes to `superpowers:brainstorming` to create a PRD), or if you already have a PRD, run `/structure` to convert it into GitHub issues and a milestone."
+- **All green:** "buehler is fully configured. You're ready to go. Next step: describe what you want to build (routes to `superpowers:brainstorming` to create a PRD), or if you already have a PRD, run `/structure` to convert it into GitHub issues and a milestone."
 - **Still has failures:** Report remaining issues. If they're human-fixable, wait. If model-fixable items failed, investigate and retry (max 3 attempts).
 
 ## Important Rules
@@ -288,4 +288,4 @@ Re-run the preflight to confirm all checks now pass:
 3. **Wizard is conversational** — one section at a time, confirm before moving on
 4. **Config is the source of truth** — preflight checks desired state against config, not hardcoded values
 5. **Labels use `:` delimiter** — never `/`
-6. **All skill references** use `limbic:{skill}` format
+6. **All skill references** use `buehler:{skill}` format

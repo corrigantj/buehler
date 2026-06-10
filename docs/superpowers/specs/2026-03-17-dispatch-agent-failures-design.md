@@ -2,13 +2,13 @@
 
 **Date:** 2026-03-17
 **Status:** Design
-**Scope:** limbic plugin — dispatch, setup, implementer, preflight
+**Scope:** buehler plugin — dispatch, setup, implementer, preflight
 
 ## Problem
 
-Three failures occurred when `limbic:dispatch` spawned implementer agents in the wordplay project:
+Three failures occurred when `buehler:dispatch` spawned implementer agents in the wordplay project:
 
-1. **Worktrees created in the wrong git repo.** `isolation: "worktree"` on the Agent tool creates worktrees from the session's git context. After `limbic:structure` cloned `.wiki/` (a separate git repo), the session context landed inside the wiki repo. Child worktrees were wiki worktrees, not project worktrees.
+1. **Worktrees created in the wrong git repo.** `isolation: "worktree"` on the Agent tool creates worktrees from the session's git context. After `buehler:structure` cloned `.wiki/` (a separate git repo), the session context landed inside the wiki repo. Child worktrees were wiki worktrees, not project worktrees.
 
 2. **Bash permission denied for subagents.** Subagents spawned via the Agent tool run non-interactively and cannot prompt for permission approval. With `defaultMode: "default"`, every Bash call was denied. Agents couldn't run `git`, `gh`, `npm`, or any shell command.
 
@@ -16,26 +16,26 @@ Three failures occurred when `limbic:dispatch` spawned implementer agents in the
 
 ## Root Cause: The `.wiki/` Landmine
 
-`.wiki/` is a full git clone with its own `.git` directory, nested inside the project repo. Any tool that walks up the directory tree to find the git root (`git rev-parse --show-toplevel`, `isolation: "worktree"`, `EnterWorktree`) can land in the wiki repo instead of the main repo depending on CWD. This is a landmine for any skill that runs after `limbic:structure`.
+`.wiki/` is a full git clone with its own `.git` directory, nested inside the project repo. Any tool that walks up the directory tree to find the git root (`git rev-parse --show-toplevel`, `isolation: "worktree"`, `EnterWorktree`) can land in the wiki repo instead of the main repo depending on CWD. This is a landmine for any skill that runs after `buehler:structure`.
 
 ## Design
 
 ### 1. Repo Root Resolution via Preflight
 
-**Principle:** The repo root is deterministic — it's wherever `.github/limbic.yaml` lives. Resolve it once in a preflight script, emit the value, let skills consume it.
+**Principle:** The repo root is deterministic — it's wherever `.github/buehler.yaml` lives. Resolve it once in a preflight script, emit the value, let skills consume it.
 
 **Change to `check-config.sh`:** After validating the YAML, emit a `repo_root` value:
 
 ```json
-{"check":"repo_root","status":"pass","value":"/absolute/path/to/project","message":"Repo root resolved from limbic.yaml location"}
+{"check":"repo_root","status":"pass","value":"/absolute/path/to/project","message":"Repo root resolved from buehler.yaml location"}
 ```
 
-Resolution logic: convert `CONFIG_PATH` to an absolute path (via `realpath` or `cd "$(dirname "$CONFIG_PATH")" && pwd`), then go up one level from `.github/`. This is necessary because `check-config.sh` receives `CONFIG_PATH` as a relative path (default `.github/limbic.yaml`). The emitted `value` must be an absolute path — no reliance on `git rev-parse` or CWD.
+Resolution logic: convert `CONFIG_PATH` to an absolute path (via `realpath` or `cd "$(dirname "$CONFIG_PATH")" && pwd`), then go up one level from `.github/`. This is necessary because `check-config.sh` receives `CONFIG_PATH` as a relative path (default `.github/buehler.yaml`). The emitted `value` must be an absolute path — no reliance on `git rev-parse` or CWD.
 
 On failure (config not found):
 
 ```json
-{"check":"repo_root","status":"fail","message":"Cannot resolve repo root — .github/limbic.yaml not found","fix":"Run limbic:setup to create configuration"}
+{"check":"repo_root","status":"fail","message":"Cannot resolve repo root — .github/buehler.yaml not found","fix":"Run buehler:setup to create configuration"}
 ```
 
 **Consumers:** dispatch, review, integrate — any skill that needs `repo_root` reads it from preflight JSONL output instead of resolving it independently.
@@ -113,7 +113,7 @@ The Instructions section removes "create your worktree" and replaces with "valid
 Setup auto-detects the project's stack (same detection logic used for build commands) and proposes a Bash allowlist:
 
 ```
-limbic agents need shell access to run git, tests, and linting in parallel.
+buehler agents need shell access to run git, tests, and linting in parallel.
 Based on your project, here are the permissions I'd add to .claude/settings.json:
 
   - Bash(git:*)
@@ -140,7 +140,7 @@ Verifies `.claude/settings.json` exists and its `permissions.allow` array contai
 On failure:
 
 ```json
-{"check":"subagent_permissions","status":"fail","message":"Missing Bash permissions for subagents — agents cannot run shell commands","fix":"Run limbic:setup to configure subagent permissions"}
+{"check":"subagent_permissions","status":"fail","message":"Missing Bash permissions for subagents — agents cannot run shell commands","fix":"Run buehler:setup to configure subagent permissions"}
 ```
 
 **Runner change:** Add `check-permissions.sh` to the run list in `runner.sh`.
@@ -196,7 +196,7 @@ Dry-run creates actual worktrees to validate the exact operation that failed in 
 
 | File | Change |
 |------|--------|
-| `scripts/preflight-checks/check-config.sh` | Emit `repo_root` value resolved from `limbic.yaml` location |
+| `scripts/preflight-checks/check-config.sh` | Emit `repo_root` value resolved from `buehler.yaml` location |
 | `scripts/preflight-checks/check-wiki.sh` | New check: `.wiki/` in `.gitignore` |
 | `scripts/preflight-checks/check-permissions.sh` | **New file.** Verify `.claude/settings.json` has minimum Bash permissions |
 | `scripts/preflight-checks/runner.sh` | Add `check-permissions.sh` to run list |
@@ -217,7 +217,7 @@ Dry-run creates actual worktrees to validate the exact operation that failed in 
 ## Key Decisions
 
 1. **Dispatch owns worktree creation, implementer validates.** The agent receives a ready-to-use worktree. `superpowers:using-git-worktrees` is retained for validation/safety, not creation.
-2. **Repo root resolved from `limbic.yaml` location.** No reliance on `git rev-parse --show-toplevel` which can land in `.wiki/`. Preflight emits the value; skills consume it.
+2. **Repo root resolved from `buehler.yaml` location.** No reliance on `git rev-parse --show-toplevel` which can land in `.wiki/`. Preflight emits the value; skills consume it.
 3. **Permissions configured during setup, verified during preflight.** Two-layer approach: setup writes `.claude/settings.json`, preflight verifies it's correct.
 4. **`permissionMode: dontAsk` in implementer frontmatter.** Clean failure mode for unapproved commands.
 5. **Dry-run creates actual worktrees.** Validates the exact operation that failed, not a simulation of it.

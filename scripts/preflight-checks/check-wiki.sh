@@ -43,14 +43,14 @@ fi
 if [ -f "${cloned_wiki}/_Meta-Template.md" ]; then
   emit "wiki.meta_template" "pass" "_Meta-Template.md exists in wiki"
 else
-  emit "wiki.meta_template" "warn" "_Meta-Template.md not found in wiki — will be created by limbic:structure on first epic"
+  emit "wiki.meta_template" "warn" "_Meta-Template.md not found in wiki — will be created by buehler:structure on first epic"
 fi
 
 # wiki.prd_template
 if [ -f "${cloned_wiki}/_PRD-Template.md" ]; then
   emit "wiki.prd_template" "pass" "_PRD-Template.md exists in wiki"
 else
-  emit "wiki.prd_template" "warn" "_PRD-Template.md not found in wiki — will be created by limbic:structure on first epic"
+  emit "wiki.prd_template" "warn" "_PRD-Template.md not found in wiki — will be created by buehler:structure on first epic"
 fi
 
 # wiki.gitignore — .wiki/ should be in .gitignore to prevent accidental commits

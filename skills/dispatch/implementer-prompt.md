@@ -1,6 +1,6 @@
 # implementer Prompt Template
 
-This template is filled by `limbic:dispatch` for each issue being dispatched.
+This template is filled by `buehler:dispatch` for each issue being dispatched.
 The coordinator replaces all `{placeholders}` before spawning the agent.
 
 ---
@@ -64,7 +64,7 @@ You are an implementer agent. Implement the following GitHub Issue.
 
 ## Instructions
 
-1. Read the `agents/implementer.md` agent definition in the limbic plugin for your full procedure
+1. Read the `agents/implementer.md` agent definition in the buehler plugin for your full procedure
 2. Follow the 9-phase execution procedure exactly
 3. **Your worktree is pre-created** at the path above — validate it, do not create a new one
 4. **Branch from and PR back to the FEATURE BRANCH**, not main

@@ -30,7 +30,7 @@ fi
 # If require_codeowners is false, skip with info
 if [ "$require_codeowners" = "false" ]; then
   emit "codeowners.enabled" "warn" \
-    "review.require_codeowners is false — PRs can be merged without CODEOWNERS approval. Set to true in .github/limbic.yaml for human review enforcement."
+    "review.require_codeowners is false — PRs can be merged without CODEOWNERS approval. Set to true in .github/buehler.yaml for human review enforcement."
   exit 0
 fi
 
@@ -46,7 +46,7 @@ done
 if [ -z "$codeowners_path" ]; then
   emit "codeowners.file_exists" "fail" \
     "No CODEOWNERS file found (checked CODEOWNERS, .github/CODEOWNERS, docs/CODEOWNERS) — review.require_codeowners is true but no owners are defined" \
-    "Create a CODEOWNERS file (e.g., .github/CODEOWNERS) with at least one rule. Run limbic:setup to generate one interactively."
+    "Create a CODEOWNERS file (e.g., .github/CODEOWNERS) with at least one rule. Run buehler:setup to generate one interactively."
   exit 0
 fi
 emit "codeowners.file_exists" "pass" "CODEOWNERS file found: ${codeowners_path}"

@@ -37,7 +37,7 @@ This skill has three modes:
 
 You MUST create a task for each of these items and complete them in order:
 
-1. **Gather context** — read limbic.yaml, detect milestones, read preflight capability flags (Step 1)
+1. **Gather context** — read buehler.yaml, detect milestones, read preflight capability flags (Step 1)
 2. **Parse intent** — extract title, type (bug vs task), milestone, stabilization context (Step 2)
 3. **Quick dedup check** — search for obvious duplicates (Step 3)
 4. **Create issue** — fast create with placeholder body (Step 4)
@@ -48,7 +48,7 @@ You MUST create a task for each of these items and complete them in order:
 
 #### Step 1: Gather Context
 
-Read `.github/limbic.yaml` from the project root. Extract:
+Read `.github/buehler.yaml` from the project root. Extract:
 - `owner` and `repo` from git remote
 - `base_branch` (default: `main`)
 - Build commands: `test_command`, `lint_command`, `build_command` (needed later if investigation is chosen)
@@ -152,7 +152,7 @@ If in stabilization context, link as sub-issue of the stabilization ticket:
 ```bash
 # If Sub-issues API available:
 gh api graphql -f query='mutation { addSubIssue(input: {issueId: "{stabilization_ticket_node_id}", subIssueId: "{new_issue_node_id}"}) { issue { id } } }'
-# Fallback: include <!-- limbic:parent #{stabilization_ticket_number} --> in the body
+# Fallback: include <!-- buehler:parent #{stabilization_ticket_number} --> in the body
 ```
 
 Capture the new issue number. Report to the human in one line:
@@ -200,7 +200,7 @@ questions:
 - Spawn the investigator agent:
   ```
   Agent tool:
-    subagent_type: "limbic:investigator"
+    subagent_type: "buehler:investigator"
     prompt: {filled_prompt}
   ```
 - Wait for the agent to return. Parse its structured YAML result.

@@ -1,6 +1,6 @@
 # Polling Sub-Agent Prompt Template
 
-Used by `limbic:review` and `limbic:integrate` when spawning a lightweight polling sub-agent to detect review activity on PRs.
+Used by `buehler:review` and `buehler:integrate` when spawning a lightweight polling sub-agent to detect review activity on PRs.
 
 ---
 

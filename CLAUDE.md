@@ -1,4 +1,4 @@
-# CLAUDE.md — limbic plugin
+# CLAUDE.md — buehler plugin
 
 ## What This Is
 
@@ -7,8 +7,8 @@ A Claude Code plugin that provides GitHub-native project management. It creates 
 ## Plugin Structure
 
 ```
-limbic/
-├── .claude-plugin/plugin.json     # Plugin metadata (v0.2.0)
+buehler/
+├── .claude-plugin/plugin.json     # Plugin metadata (v0.4.0)
 ├── hooks/                         # SessionStart + PreToolUse hooks
 │   ├── hooks.json                 # Hook event definitions (SessionStart, PreToolUse)
 │   ├── session-start.sh           # Injects slim routing table on session start
@@ -20,7 +20,7 @@ limbic/
 │       ├── runner.sh              # Orchestrator — runs all checks, aggregates output
 │       ├── check-env.sh           # gh CLI, git repo, GitHub remote
 │       ├── check-repo.sh          # Wiki, Issue Types API, Sub-issues API
-│       ├── check-config.sh        # limbic.yaml existence and schema
+│       ├── check-config.sh        # buehler.yaml existence and schema
 │       ├── check-labels.sh        # Label taxonomy matches config
 │       ├── check-wiki.sh          # Wiki clone, Home page, templates, .gitignore
 │       ├── check-permissions.sh   # Subagent Bash permissions in .claude/settings.json
@@ -48,7 +48,7 @@ limbic/
 ├── agents/
 │   ├── implementer.md             # Subordinate agent: 9-phase TDD workflow
 │   └── investigator.md            # Subordinate agent: 10-phase investigation workflow
-├── templates/limbic.yaml          # Configuration schema with sizing buckets
+├── templates/buehler.yaml          # Configuration schema with sizing buckets
 ├── CLAUDE.md
 ├── LICENSE
 └── README.md
@@ -57,25 +57,25 @@ limbic/
 ## Skill Flow
 
 ```
-limbic:setup → .github/limbic.yaml + GitHub artifacts (labels, wiki, project board)
+buehler:setup → .github/buehler.yaml + GitHub artifacts (labels, wiki, project board)
 → brainstorming → PRD file (use superpowers:brainstorming)
-→ limbic:structure → Wiki PRD + Meta page + Milestone + Issues + feature branch + add to board
-→ limbic:dispatch → Spawn agents (task branches off feature branch)
-→ limbic:status → Progress dashboard (run anytime, crash recovery)
-→ limbic:review → Task PRs reviewed, merged into feature branch, lessons learned
-→ limbic:integrate → Feature branch → main PR, retro, wiki update, close milestone
-→ limbic:issue → Ad-hoc issue spike, investigation, triage (anytime)
+→ buehler:structure → Wiki PRD + Meta page + Milestone + Issues + feature branch + add to board
+→ buehler:dispatch → Spawn agents (task branches off feature branch)
+→ buehler:status → Progress dashboard (run anytime, crash recovery)
+→ buehler:review → Task PRs reviewed, merged into feature branch, lessons learned
+→ buehler:integrate → Feature branch → main PR, retro, wiki update, close milestone
+→ buehler:issue → Ad-hoc issue spike, investigation, triage (anytime)
 ```
 
 ## Key Conventions
 
 1. **GitHub Issues + Wiki are the durable state machine** — all progress survives session crashes
 2. **Two-wave PR model** — task PRs → feature branch (wave 1, review), feature → main (wave 2, integrate)
-3. **Dependencies encoded as HTML comments** — `<!-- limbic:blocked-by #12, #15 -->` and `<!-- limbic:parent #10 -->`
+3. **Dependencies encoded as HTML comments** — `<!-- buehler:blocked-by #12, #15 -->` and `<!-- buehler:parent #10 -->`
 4. **Label taxonomy** — `epic:`, `priority:`, `severity:`, `meta:`, `size:`, `status:`, `type:`, `backlog:` prefixes (`:` delimiter)
 5. **Versioned epics** — lower-kebab-case naming: `{epic}-v{Major}.{Minor}`
 6. **PRD lifecycle** — Draft → In Review → Active → Approved → Superseded
-7. **Token-based sizing** — configurable buckets in `.github/limbic.yaml`, calibrated via retros
+7. **Token-based sizing** — configurable buckets in `.github/buehler.yaml`, calibrated via retros
 8. **Dispatch creates worktrees, agents validate** — worktrees branch from the feature branch, created by dispatch via `git -C {repo_root}`, validated by the implementer via `superpowers:using-git-worktrees`
 9. **CODEOWNERS required by default** — `review.require_codeowners` defaults to `true`; PRs are never self-merged without human CODEOWNER approval
 10. **Severity + Priority** — two-axis triage: `severity:` (impact on system) + `priority:` (urgency of fix)
@@ -88,16 +88,16 @@ limbic:setup → .github/limbic.yaml + GitHub artifacts (labels, wiki, project b
 - **gh CLI** — for labels, milestones, wiki, and operations not covered by MCP
 - **Wiki enabled** on the GitHub repository
 
-Run `limbic:setup` to verify all prerequisites and configure the repository.
+Run `buehler:setup` to verify all prerequisites and configure the repository.
 
 ## Skill Reference
 
 | Skill | When to Use |
 |-------|------------|
-| `limbic:setup` | Setup, configuration, preflight checks, drift detection and remediation |
-| `limbic:structure` | Convert a PRD into Wiki pages + Milestone + Issues + feature branch |
-| `limbic:dispatch` | Spawn parallel implementer agents for ready issues |
-| `limbic:status` | View progress dashboard from GitHub state |
-| `limbic:review` | Poll task PRs for reviews, merge into feature branch, capture lessons learned |
-| `limbic:integrate` | Merge feature branch to main, create retro, update wiki, calibrate sizing |
-| `limbic:issue` | Ad-hoc issue creation, investigation, triage, fix execution, and backlog capture |
+| `buehler:setup` | Setup, configuration, preflight checks, drift detection and remediation |
+| `buehler:structure` | Convert a PRD into Wiki pages + Milestone + Issues + feature branch |
+| `buehler:dispatch` | Spawn parallel implementer agents for ready issues |
+| `buehler:status` | View progress dashboard from GitHub state |
+| `buehler:review` | Poll task PRs for reviews, merge into feature branch, capture lessons learned |
+| `buehler:integrate` | Merge feature branch to main, create retro, update wiki, calibrate sizing |
+| `buehler:issue` | Ad-hoc issue creation, investigation, triage, fix execution, and backlog capture |

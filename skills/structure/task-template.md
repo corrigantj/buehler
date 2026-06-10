@@ -1,6 +1,6 @@
 # Dev Task Template
 
-Used by `limbic:structure` when creating dev task sub-issues under a product story. Replace `{placeholders}` with actual content.
+Used by `buehler:structure` when creating dev task sub-issues under a product story. Replace `{placeholders}` with actual content.
 
 ---
 

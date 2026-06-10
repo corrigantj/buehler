@@ -4,7 +4,7 @@ set -euo pipefail
 : "${OWNER:?OWNER env var required}"
 : "${REPO:?REPO env var required}"
 
-CONFIG_PATH="${CONFIG_PATH:-.github/limbic.yaml}"
+CONFIG_PATH="${CONFIG_PATH:-.github/buehler.yaml}"
 ISSUE_TYPES_AVAILABLE="${ISSUE_TYPES_AVAILABLE:-false}"
 
 emit() {

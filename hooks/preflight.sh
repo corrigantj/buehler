@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # preflight.sh — PreToolUse hook for Skill tool invocations
 # Gates: structure, dispatch, review, integrate, issue
-# Passes: setup, status, and all non-limbic skills
+# Passes: setup, status, and all non-buehler skills
 
 set -uo pipefail
 
@@ -24,9 +24,9 @@ except Exception:
     print('')
 " 2>/dev/null) || skill_name=""
 
-# Pass through non-limbic skills and ungated limbic skills
+# Pass through non-buehler skills and ungated buehler skills
 case "$skill_name" in
-  limbic:structure|limbic:dispatch|limbic:review|limbic:integrate|limbic:issue)
+  buehler:structure|buehler:dispatch|buehler:review|buehler:integrate|buehler:issue)
     # Gated — run preflight
     ;;
   *)

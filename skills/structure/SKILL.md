@@ -16,7 +16,7 @@ description: Use when converting a PRD or design document into a GitHub Wiki PRD
 
 You MUST create a task for each of these items and complete them in order:
 
-1. **Parse PRD and read configuration** — extract epic name, stories, dependencies; read limbic.yaml (Steps 1-3)
+1. **Parse PRD and read configuration** — extract epic name, stories, dependencies; read buehler.yaml (Steps 1-3)
 2. **Validate inputs** — check PRD sections, story completeness, milestone uniqueness, size sanity (Step 4)
 3. **Create wiki pages** — PRD page, meta page, Home page, templates; commit and push (Step 5)
 4. **Create epic label and milestone** — per-epic label, milestone with PRD link (Steps 6-7)
@@ -40,7 +40,7 @@ If the PRD is ambiguous, ask the user for clarification before proceeding.
 
 ### Step 2: Read Configuration
 
-Read `.github/limbic.yaml` from the project root. Extract:
+Read `.github/buehler.yaml` from the project root. Extract:
 - **Wiki settings** -- `wiki.auto_clone`, template paths
 - **Sizing buckets** -- `sizing.buckets` with token ranges (lower/upper) and descriptions
 - **Validation settings** -- `validation.enabled`, required PRD sections
@@ -146,7 +146,7 @@ Create `epic:{epic}` with color `0052cc` (blue) if it doesn't already exist:
 gh label create "epic:{epic}" --color "0052cc" --description "Epic: {Epic Name}" --force
 ```
 
-Taxonomy labels (priority, meta, size, status, backlog, type) are created by `limbic:setup` and should already exist. If they don't, run `limbic:setup` first.
+Taxonomy labels (priority, meta, size, status, backlog, type) are created by `buehler:setup` and should already exist. If they don't, run `buehler:setup` first.
 
 Read capability flags from the preflight JSONL injected as additionalContext by the PreToolUse hook:
 - Issue Types: look for `"repo.issue_types"` with `"status":"pass"`
@@ -186,7 +186,7 @@ Run the creation script:
 
 The script is idempotent — if a stabilization ticket already exists for this milestone, it returns the existing issue number.
 
-The stabilization ticket is labeled `meta:ignore` so that `limbic:dispatch` will not attempt to dispatch it for implementation.
+The stabilization ticket is labeled `meta:ignore` so that `buehler:dispatch` will not attempt to dispatch it for implementation.
 
 ### Step 8: Create Feature Branch
 
@@ -234,13 +234,13 @@ For each story, create dev tasks as sub-issues. Compose bodies using `task-templ
 - **Parent link** -- `#{parent_issue_number}`
 - **Scenarios addressed** -- which parent scenarios (S1, S2, etc.) this task covers
 - **Objective** -- one sentence describing what this task produces
-- **Files Likely Affected** -- bulleted list of file paths this task will create or modify (used by `limbic:dispatch` for file-overlap detection and by `implementer` as a scope guardrail)
+- **Files Likely Affected** -- bulleted list of file paths this task will create or modify (used by `buehler:dispatch` for file-overlap detection and by `implementer` as a scope guardrail)
 - **Implementation notes** -- function signatures, architectural decisions
 - **Done when** -- concrete, verifiable checklist items
 
 If Sub-issues API is available, create tasks as sub-issues of their parent story.
 
-If Sub-issues API is unavailable, create as regular issues with `<!-- limbic:parent #NN -->` in the body to link to the parent story.
+If Sub-issues API is unavailable, create as regular issues with `<!-- buehler:parent #NN -->` in the body to link to the parent story.
 
 **Always assign tasks to the milestone** created in Step 7, regardless of whether they are sub-issues or regular issues. Sub-issues do not inherit milestone assignment from their parent.
 
@@ -255,10 +255,10 @@ Use Issue Type `task` if available, otherwise apply `type:task` label.
 
 For each story that depends on other stories, ensure the body contains:
 ```html
-<!-- limbic:blocked-by #12, #15 -->
+<!-- buehler:blocked-by #12, #15 -->
 ```
 
-This HTML comment is invisible to human readers but machine-parseable by `limbic:dispatch`.
+This HTML comment is invisible to human readers but machine-parseable by `buehler:dispatch`.
 
 Also label dependent stories as `status:blocked` (not `status:ready`).
 
@@ -409,7 +409,7 @@ Output a summary for the user:
 |---|-------|-----------|
 | {number} | {title} | #{deps} |
 
-**Next:** invoke `limbic:dispatch` to start implementation.
+**Next:** invoke `buehler:dispatch` to start implementation.
 ```
 
 ## Important Rules
@@ -422,4 +422,4 @@ Output a summary for the user:
 6. **One behavior per story** -- split if covering multiple behaviors
 7. **Validation must pass before creation** -- measure twice, cut once (Step 4)
 8. **Approved/Superseded PRDs cannot be modified** -- create a new version instead
-9. **All skill references use `limbic:{skill}` format**
+9. **All skill references use `buehler:{skill}` format**

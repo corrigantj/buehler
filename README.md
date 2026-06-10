@@ -1,4 +1,4 @@
-# limbic
+# buehler
 
 **Your favorite AI product squad. All GitHub-native.  Built for Claude Code.**
 
@@ -11,9 +11,9 @@
 
 ## How It Works
 
-limbic loads automatically when you start a Claude Code session. Just describe what you want to build — the plugin handles the rest:
+buehler loads automatically when you start a Claude Code session. Just describe what you want to build — the plugin handles the rest:
 
-1. **You describe a feature** — limbic routes to `superpowers:brainstorming`, which produces a PRD saved to the project wiki.
+1. **You describe a feature** — buehler routes to `superpowers:brainstorming`, which produces a PRD saved to the project wiki.
 2. **Structure** — the PRD becomes a wiki page, a GitHub Milestone, story/task issues, and a feature branch
 3. **Dispatch** — parallel agents spawn in isolated worktrees, implement with TDD, and create task PRs targeting the feature branch
 4. **Review** — task PRs are polled for human review, feedback is addressed, approved PRs merge into the feature branch
@@ -25,23 +25,23 @@ All state lives in GitHub Issues, PRs, and Wiki — session crashes are fully re
 
 ### 1. Install the superpowers plugin (required dependency)
 
-limbic depends on [superpowers](https://github.com/obra/superpowers) for brainstorming, TDD, git worktrees, and systematic debugging. Install it first:
+buehler depends on [superpowers](https://github.com/obra/superpowers) for brainstorming, TDD, git worktrees, and systematic debugging. Install it first:
 
 ```
 /plugin marketplace add obra/superpowers
 /plugin install superpowers@obra-superpowers
 ```
 
-### 2. Install limbic
+### 2. Install buehler
 
 ```
-/plugin marketplace add corrigantj/limbic
-/plugin install limbic@corrigantj-limbic
+/plugin marketplace add corrigantj/buehler
+/plugin install buehler@corrigantj-buehler
 ```
 
 ### 3. Verify prerequisites
 
-limbic needs these to be available in your environment:
+buehler needs these to be available in your environment:
 
 - **GitHub MCP server** — configured in your Claude Code settings (for issue/PR/milestone management)
 - **`gh` CLI** — authenticated (`gh auth status`)
@@ -62,7 +62,7 @@ This kicks off `superpowers:brainstorming` to interactively research and explore
 
 ### 2. Structure into Wiki + GitHub Issues
 
-Once you have a PRD, `limbic:setup` routes to `limbic:structure` (or you can invoke it directly):
+Once you have a PRD, `buehler:setup` routes to `buehler:structure` (or you can invoke it directly):
 
 ```
 Structure this PRD into GitHub issues
@@ -119,7 +119,7 @@ Task PRs target the feature branch (wave 1, managed by `review`). Once all tasks
 
 ### Wiki Management
 
-limbic maintains a project wiki with three page types:
+buehler maintains a project wiki with three page types:
 - **PRD pages** — living design documents with a lifecycle: Draft, In Review, Active, Approved, Superseded
 - **Meta pages** — index pages linking milestones, issues, and PRDs for an epic
 - **Retro pages** — retrospective summaries created during integrate with sizing calibration data
@@ -130,7 +130,7 @@ Epics use lower-kebab-case naming with semantic versioning: `{epic}-v{Major}.{Mi
 
 ### Token-Based Sizing
 
-Issues are sized based on estimated token consumption, configured as buckets in `.github/limbic.yaml`. During `integrate`, actual token usage is compared against estimates, and the sizing calibration is updated in the retrospective wiki page. This feedback loop improves future estimates.
+Issues are sized based on estimated token consumption, configured as buckets in `.github/buehler.yaml`. During `integrate`, actual token usage is compared against estimates, and the sizing calibration is updated in the retrospective wiki page. This feedback loop improves future estimates.
 
 ### Label Taxonomy
 
@@ -143,25 +143,25 @@ Labels use a `:` delimiter with standardized prefixes:
 
 ### Sub-Issue Hierarchy
 
-Work is organized as stories containing task and bug sub-issues. Stories represent product-level requirements with Gherkin acceptance criteria. Tasks and bugs are implementation-level work items linked to their parent story via `<!-- limbic:parent #N -->` comments.
+Work is organized as stories containing task and bug sub-issues. Stories represent product-level requirements with Gherkin acceptance criteria. Tasks and bugs are implementation-level work items linked to their parent story via `<!-- buehler:parent #N -->` comments.
 
 ## Skill Reference
 
 | Skill | Purpose |
 |-------|---------|
-| `limbic:setup` | Setup, configuration, preflight checks, drift detection and remediation |
-| `limbic:structure` | Convert PRD into Wiki pages + Milestone + Issues + feature branch |
-| `limbic:dispatch` | Spawn parallel agents for ready issues |
-| `limbic:status` | Live progress dashboard from GitHub state |
-| `limbic:review` | Poll task PRs, merge into feature branch, capture lessons learned |
-| `limbic:integrate` | Merge feature branch to main, create retro, calibrate sizing |
+| `buehler:setup` | Setup, configuration, preflight checks, drift detection and remediation |
+| `buehler:structure` | Convert PRD into Wiki pages + Milestone + Issues + feature branch |
+| `buehler:dispatch` | Spawn parallel agents for ready issues |
+| `buehler:status` | Live progress dashboard from GitHub state |
+| `buehler:review` | Poll task PRs, merge into feature branch, capture lessons learned |
+| `buehler:integrate` | Merge feature branch to main, create retro, calibrate sizing |
 
 ## Configuration
 
-Create `.github/limbic.yaml` in your project repository:
+Create `.github/buehler.yaml` in your project repository:
 
 ```yaml
-# limbic configuration
+# buehler configuration
 # All values shown are defaults and can be omitted if unchanged.
 
 # Project identity (auto-detected from git remote if omitted)
@@ -177,7 +177,7 @@ agents:
 
 # Branch naming
 branches:
-  prefix: limbic     # Branches: limbic/{issue}-{slug}
+  prefix: buehler     # Branches: buehler/{issue}-{slug}
 
 # Worktree management
 worktrees:
@@ -254,7 +254,7 @@ All values have sensible defaults. The file is optional.
 ## Plugin Structure
 
 ```
-limbic/
+buehler/
 ├── .claude-plugin/plugin.json     # Plugin metadata (v0.2.0)
 ├── hooks/                         # SessionStart + PreToolUse hooks
 │   ├── hooks.json                 # Hook event definitions (SessionStart, PreToolUse)
@@ -279,7 +279,7 @@ limbic/
 │   └── integrate/                 # Feature→main PR, retro, wiki update, calibration
 │       └── retro-template.md      # Retrospective wiki page template
 ├── agents/implementer.md          # Subordinate agent: 9-phase TDD workflow
-├── templates/limbic.yaml          # Configuration schema with sizing buckets
+├── templates/buehler.yaml          # Configuration schema with sizing buckets
 ├── CLAUDE.md
 ├── LICENSE
 └── README.md

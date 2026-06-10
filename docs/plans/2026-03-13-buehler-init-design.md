@@ -1,4 +1,4 @@
-# Design: `limbic:init` — Setup, Configuration & Preflight
+# Design: `buehler:init` — Setup, Configuration & Preflight
 
 **Date:** 2026-03-13
 **Status:** Draft
@@ -7,19 +7,19 @@
 
 ## Problem
 
-The limbic plugin assumes a fully configured GitHub environment — wiki enabled, labels created, gh CLI authenticated, correct permissions. Users discover missing prerequisites mid-`structure` as cryptic errors. There is no standalone setup flow, no way to validate the environment, and no way to detect or fix drift after initial configuration.
+The buehler plugin assumes a fully configured GitHub environment — wiki enabled, labels created, gh CLI authenticated, correct permissions. Users discover missing prerequisites mid-`structure` as cryptic errors. There is no standalone setup flow, no way to validate the environment, and no way to detect or fix drift after initial configuration.
 
-Additionally, `using-limbic` duplicates prerequisite and capability detection logic that belongs in a deterministic, hookable script — not an LLM skill.
+Additionally, `using-buehler` duplicates prerequisite and capability detection logic that belongs in a deterministic, hookable script — not an LLM skill.
 
 ## Design Summary
 
 Three new components:
 
-1. **`limbic:init` skill** — Conversational wizard that produces `.github/limbic.yaml`, plus remediation logic that converges GitHub state to match the config.
+1. **`buehler:init` skill** — Conversational wizard that produces `.github/buehler.yaml`, plus remediation logic that converges GitHub state to match the config.
 2. **Modular preflight check scripts** — Deterministic bash scripts under `scripts/preflight-checks/` that validate environment, repo capabilities, config, labels, and wiki state. Output is JSONL. Never mutate — only report.
 3. **PreToolUse hook** — Runs preflight before `structure`, `dispatch`, `review`, `integrate`. Returns `deny` with JSONL report on failure, `allow` on success with JSONL injected as `additionalContext`.
 
-Additionally, `using-limbic` is deleted and replaced by a slim routing table injected via the session-start hook.
+Additionally, `using-buehler` is deleted and replaced by a slim routing table injected via the session-start hook.
 
 ## Key Design Decisions
 
@@ -27,14 +27,14 @@ Additionally, `using-limbic` is deleted and replaced by a slim routing table inj
 - **`init` is idempotent.** Run it once to bootstrap, run it again to detect and fix drift. It converges — never destructive.
 - **Merge strategy is not configurable.** The two-wave model (rebase task PRs into feature, squash feature into main) is opinionated and hardcoded.
 - **Capability detection results flow via context injection.** The preflight JSONL is injected by the hook; downstream skills read it from context. No state files.
-- **`using-limbic` is eliminated.** Its routing table moves to the session-start hook. Its prerequisite and capability checks move to the preflight scripts.
+- **`using-buehler` is eliminated.** Its routing table moves to the session-start hook. Its prerequisite and capability checks move to the preflight scripts.
 
 ---
 
 ## File Structure
 
 ```
-limbic/
+buehler/
 ├── skills/
 │   └── init/
 │       └── SKILL.md                    # Conversational wizard + remediation logic
@@ -43,12 +43,12 @@ limbic/
 │       ├── runner.sh                   # Orchestrator — runs all checks, aggregates JSONL
 │       ├── check-env.sh               # gh CLI, git repo, GitHub remote
 │       ├── check-repo.sh              # Wiki enabled, Issue Types API, Sub-issues API
-│       ├── check-config.sh            # limbic.yaml exists, parses, schema valid
+│       ├── check-config.sh            # buehler.yaml exists, parses, schema valid
 │       ├── check-labels.sh            # Label taxonomy matches config
 │       └── check-wiki.sh              # Wiki cloneable, Home page, templates
 ├── hooks/
 │   ├── hooks.json                     # SessionStart + PreToolUse hooks
-│   ├── session-start.sh               # Slim routing table injection (replaces using-limbic)
+│   ├── session-start.sh               # Slim routing table injection (replaces using-buehler)
 │   └── preflight.sh                   # PreToolUse wrapper — skips init/status, delegates to runner
 ```
 
@@ -74,7 +74,7 @@ Fields:
 
 ### runner.sh
 
-- Accepts config path argument (defaults to `.github/limbic.yaml`)
+- Accepts config path argument (defaults to `.github/buehler.yaml`)
 - Auto-detects owner/repo from git remote
 - Runs all check scripts in order, concatenates JSONL output
 - Accepts `--check <name>` flag to run a single check category
@@ -95,10 +95,10 @@ Fields:
 
 ### check-config.sh
 
-- `.github/limbic.yaml` exists
+- `.github/buehler.yaml` exists
 - Parses as valid YAML (no syntax errors)
 - Required fields present or defaults apply cleanly
-- No unknown top-level keys (catches typos) — valid keys defined by `templates/limbic.yaml` in the plugin: `project`, `agents`, `branches`, `worktrees`, `approval_gates`, `commands`, `labels`, `wiki`, `epics`, `validation`, `review`, `sizing` (nested key validation is not in scope — only top-level)
+- No unknown top-level keys (catches typos) — valid keys defined by `templates/buehler.yaml` in the plugin: `project`, `agents`, `branches`, `worktrees`, `approval_gates`, `commands`, `labels`, `wiki`, `epics`, `validation`, `review`, `sizing` (nested key validation is not in scope — only top-level)
 
 ### check-labels.sh
 
@@ -111,7 +111,7 @@ Fields:
   - Type (only if Issue Types unavailable): `type:story`, `type:task`, `type:bug`
   - Backlog: `backlog:now`, `backlog:next`, `backlog:later`, `backlog:icebox`
   - Epic labels (from existing milestones/config)
-  - Custom labels from `limbic.yaml`
+  - Custom labels from `buehler.yaml`
 - Reports each missing label individually with the exact `gh label create` command in the `fix` field
 
 ### check-wiki.sh
@@ -174,23 +174,23 @@ The `preflight.sh` wrapper receives the `Skill` tool's input JSON on stdin, extr
 
 ### Session-Start Hook (Updated)
 
-Replaces the current full `using-limbic` skill injection with a slim routing table:
+Replaces the current full `using-buehler` skill injection with a slim routing table:
 
 ```
-<LIMBIC_PLUGIN>
-You have project management capabilities via the limbic plugin.
+<BUEHLER_PLUGIN>
+You have project management capabilities via the buehler plugin.
 
 ## Skill Routing
 
 | User Intent | Skill |
 |---|---|
-| First-time setup / "init" / fix drift | limbic:init |
-| New feature / project / "plan this" | superpowers:brainstorming → limbic:structure |
-| "Break this down" / has a PRD | limbic:structure |
-| "Start working" / "Dispatch" | limbic:dispatch |
-| "What's the status?" | limbic:status |
-| "Review PRs" / "Check feedback" | limbic:review |
-| "Merge" / "Ship it" / "Integrate" | limbic:integrate |
+| First-time setup / "init" / fix drift | buehler:init |
+| New feature / project / "plan this" | superpowers:brainstorming → buehler:structure |
+| "Break this down" / has a PRD | buehler:structure |
+| "Start working" / "Dispatch" | buehler:dispatch |
+| "What's the status?" | buehler:status |
+| "Review PRs" / "Check feedback" | buehler:review |
+| "Merge" / "Ship it" / "Integrate" | buehler:integrate |
 
 ## Flow
 
@@ -200,12 +200,12 @@ init → brainstorming → structure → dispatch → status → review → inte
 
 A hook runs preflight checks before structure, dispatch, review, and integrate.
 If checks fail, read the JSONL report and remediate before proceeding.
-</LIMBIC_PLUGIN>
+</BUEHLER_PLUGIN>
 ```
 
 ---
 
-## `limbic:init` Skill
+## `buehler:init` Skill
 
 ### Flow: No Config Exists
 
@@ -218,7 +218,7 @@ If checks fail, read the JSONL report and remediate before proceeding.
    - Labels (show full default taxonomy including backlog labels, ask about custom labels)
    - Approval gates
 3. For each section: show the default, ask "looks good or want to change anything?"
-4. Write `.github/limbic.yaml`
+4. Write `.github/buehler.yaml`
 5. Run preflight → report results → remediate
 
 ### Flow: Config Exists
@@ -242,18 +242,18 @@ The model reads the `fix` field from each failed check and decides:
 
 ### Deleted
 
-- `skills/using-limbic/` — entire directory removed
+- `skills/using-buehler/` — entire directory removed
 
 ### Modified: `skills/structure/SKILL.md`
 
-- Remove prerequisite checking (was duplicating using-limbic's checks)
+- Remove prerequisite checking (was duplicating using-buehler's checks)
 - Remove capability detection logic — read from preflight JSONL in context
 - Replace Step 7 (full taxonomy creation) with per-epic label creation only (`epic:{name}`) — taxonomy labels (priority, meta, size, status, backlog, type) already exist from `init`
 - Renumber Steps 8-15 → Steps 7-14 accordingly
 - Update checklist item 4 to reflect: "Create epic label and milestone" (not full taxonomy)
 - Keep: PRD parsing, wiki pages, milestone, stories, tasks, dependency annotation, validation
 
-### Modified: `templates/limbic.yaml`
+### Modified: `templates/buehler.yaml`
 
 - Remove `merge` section entirely
 
@@ -268,7 +268,7 @@ The model reads the `fix` field from each failed check and decides:
 
 ### Modified: `hooks/session-start.sh`
 
-- Replace full `using-limbic` skill content injection with slim routing table
+- Replace full `using-buehler` skill content injection with slim routing table
 
 ---
 
@@ -276,17 +276,17 @@ The model reads the `fix` field from each failed check and decides:
 
 ### Modified: `CLAUDE.md`
 
-- Update Plugin Structure tree: add `scripts/preflight-checks/`, `skills/init/`, remove `skills/using-limbic/`
+- Update Plugin Structure tree: add `scripts/preflight-checks/`, `skills/init/`, remove `skills/using-buehler/`
 - Update Skill Flow: add `init` as entry point
-- Update Skill Reference table: add `limbic:init`, remove `limbic:using-limbic`
+- Update Skill Reference table: add `buehler:init`, remove `buehler:using-buehler`
 - Update Key Conventions label taxonomy: add `backlog:` and `type:` prefixes
-- Update Prerequisites: reference `limbic:init` as the setup mechanism
+- Update Prerequisites: reference `buehler:init` as the setup mechanism
 
 ---
 
 ## Consuming Preflight Results in Skills
 
-All limbic skills that run behind the PreToolUse gate receive the preflight JSONL as `additionalContext`. Skills should parse capability flags from this context:
+All buehler skills that run behind the PreToolUse gate receive the preflight JSONL as `additionalContext`. Skills should parse capability flags from this context:
 
 - **Issue Types available:** look for `check: "repo.issue_types"` with `status: "pass"`
 - **Sub-issues API available:** look for `check: "repo.sub_issues"` with `status: "pass"`
@@ -307,5 +307,5 @@ The PreToolUse hook uses exit 0 → `allow` (with JSONL as additionalContext), e
 
 ## What Is NOT In Scope
 
-- New configuration knobs beyond what `limbic.yaml` already defines (minus merge)
+- New configuration knobs beyond what `buehler.yaml` already defines (minus merge)
 - Any changes to the `agents/implementer.md` agent

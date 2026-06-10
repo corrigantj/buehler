@@ -6,7 +6,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_PATH=".github/limbic.yaml"
+CONFIG_PATH=".github/buehler.yaml"
 SINGLE_CHECK=""
 
 # Parse args

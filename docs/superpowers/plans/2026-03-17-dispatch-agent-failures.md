@@ -4,7 +4,7 @@
 
 **Goal:** Fix three dispatch agent failures — wrong-repo worktrees, Bash permission denials, and implementer Phase 1 — by having dispatch own worktree creation, adding permission preflight checks, and updating the implementer to validate rather than create.
 
-**Architecture:** Preflight scripts resolve `repo_root` deterministically from `limbic.yaml` location and verify Bash permissions. Dispatch creates worktrees explicitly via `git -C {repo_root}` before spawning agents. The implementer validates the pre-created worktree instead of creating one. A dry-run mode validates the full pipeline without spawning agents.
+**Architecture:** Preflight scripts resolve `repo_root` deterministically from `buehler.yaml` location and verify Bash permissions. Dispatch creates worktrees explicitly via `git -C {repo_root}` before spawning agents. The implementer validates the pre-created worktree instead of creating one. A dry-run mode validates the full pipeline without spawning agents.
 
 **Tech Stack:** Bash (preflight scripts), Markdown (skill definitions, agent definitions, prompt templates)
 
@@ -41,10 +41,10 @@ After line 25 (`emit "config.exists" "pass" ...`), add:
 # repo_root — resolve absolute path from config location
 abs_config="$(cd "$(dirname "$CONFIG_PATH")" && pwd)/$(basename "$CONFIG_PATH")"
 repo_root="$(dirname "$(dirname "$abs_config")")"
-emit_value "repo_root" "pass" "Repo root resolved from limbic.yaml location" "$repo_root"
+emit_value "repo_root" "pass" "Repo root resolved from buehler.yaml location" "$repo_root"
 ```
 
-This converts the relative `CONFIG_PATH` (default `.github/limbic.yaml`) to absolute, then goes up two levels (file → `.github/` → repo root).
+This converts the relative `CONFIG_PATH` (default `.github/buehler.yaml`) to absolute, then goes up two levels (file → `.github/` → repo root).
 
 - [ ] **Step 4: Emit repo_root fail when config doesn't exist**
 
@@ -53,20 +53,20 @@ In the config.exists fail block (lines 20-24), add a `repo_root` fail emit befor
 Add before line 21 (`emit "config.exists" "fail" ...`):
 
 ```bash
-  emit "repo_root" "fail" "Cannot resolve repo root — .github/limbic.yaml not found" \
-    "Run limbic:setup to create .github/limbic.yaml"
+  emit "repo_root" "fail" "Cannot resolve repo root — .github/buehler.yaml not found" \
+    "Run buehler:setup to create .github/buehler.yaml"
 ```
 
 - [ ] **Step 5: Verify the script runs without errors**
 
 Run:
 ```bash
-cd /Users/traviscorrigan/Documents/GitHub/limbic && CONFIG_PATH=.github/limbic.yaml bash scripts/preflight-checks/check-config.sh
+cd /Users/traviscorrigan/Documents/GitHub/buehler && CONFIG_PATH=.github/buehler.yaml bash scripts/preflight-checks/check-config.sh
 ```
 
 Expected: existing checks pass plus a new `repo_root` line with an absolute path value.
 
-Note: This repo doesn't have a `.github/limbic.yaml` (it's a plugin repo, not a consumer repo), so we expect a `config.exists` fail. That's correct — just verify no syntax errors.
+Note: This repo doesn't have a `.github/buehler.yaml` (it's a plugin repo, not a consumer repo), so we expect a `config.exists` fail. That's correct — just verify no syntax errors.
 
 - [ ] **Step 6: Commit**
 
@@ -74,9 +74,9 @@ Note: This repo doesn't have a `.github/limbic.yaml` (it's a plugin repo, not a 
 git add scripts/preflight-checks/check-config.sh
 git commit -m "feat(preflight): emit repo_root from check-config.sh
 
-Resolves absolute repo root from limbic.yaml location. Skills
+Resolves absolute repo root from buehler.yaml location. Skills
 consume this value instead of using git rev-parse, which can
-land in .wiki/ after limbic:structure clones the wiki repo."
+land in .wiki/ after buehler:structure clones the wiki repo."
 ```
 
 ---
@@ -121,7 +121,7 @@ git add scripts/preflight-checks/check-wiki.sh
 git commit -m "feat(preflight): check .wiki/ is in .gitignore
 
 Prevents accidental commit of the wiki clone directory into the
-main repo. Remediated by limbic:setup during wiki setup."
+main repo. Remediated by buehler:setup during wiki setup."
 ```
 
 ---
@@ -156,7 +156,7 @@ emit() {
 # permissions.settings_exists
 if [ ! -f "$SETTINGS_PATH" ]; then
   emit "permissions.settings_exists" "fail" "No ${SETTINGS_PATH} found — subagents will not have Bash permissions" \
-    "Run limbic:setup to configure subagent permissions"
+    "Run buehler:setup to configure subagent permissions"
   exit 0
 fi
 emit "permissions.settings_exists" "pass" "Settings file found: ${SETTINGS_PATH}"
@@ -171,7 +171,7 @@ allow_list=$(jq -r '.permissions.allow[]? // empty' "$SETTINGS_PATH" 2>/dev/null
 
 if [ -z "$allow_list" ]; then
   emit "permissions.bash_access" "fail" "No permissions.allow entries in ${SETTINGS_PATH} — subagents cannot run shell commands" \
-    "Run limbic:setup to configure subagent permissions"
+    "Run buehler:setup to configure subagent permissions"
   exit 0
 fi
 
@@ -188,7 +188,7 @@ if [ -z "$missing" ]; then
 else
   missing="${missing%, }"
   emit "permissions.bash_access" "fail" "Missing Bash permissions for subagents: ${missing}" \
-    "Run limbic:setup to configure subagent permissions — agents need at minimum Bash(git:*) and Bash(gh:*)"
+    "Run buehler:setup to configure subagent permissions — agents need at minimum Bash(git:*) and Bash(gh:*)"
 fi
 ```
 
@@ -239,7 +239,7 @@ where agents are spawned but can't execute any Bash tool calls."
 After the approval gates section (line 132, the closing ` ``` ` of the approval_gates YAML), and before the "Remaining config sections" paragraph (line 134), insert:
 
 ```markdown
-7. **Subagent permissions** — limbic agents need shell access to run git, tests, and linting.
+7. **Subagent permissions** — buehler agents need shell access to run git, tests, and linting.
 
    Auto-detect the project's stack using the same heuristics as build command detection:
    - Always include: `Bash(git:*)`, `Bash(gh:*)`
@@ -251,7 +251,7 @@ After the approval gates section (line 132, the closing ` ``` ` of the approval_
 
    Present the proposed permissions:
    ```
-   limbic agents need shell access to run git, tests, and linting in parallel.
+   buehler agents need shell access to run git, tests, and linting in parallel.
    Based on your project, here are the permissions I'd add to .claude/settings.json:
 
      - Bash(git:*)
@@ -355,11 +355,11 @@ New:
 ```
 10. **Spawn the agent** using the Agent tool (no `isolation: "worktree"` — the worktree was already created in step 3):
     ```
-    Agent tool with subagent_type: "limbic:implementer"
+    Agent tool with subagent_type: "buehler:implementer"
     prompt: {filled implementer prompt}
     model: {from config, default opus}
     ```
-    Do NOT use `isolation: "worktree"` — this creates worktrees from the session's git context, which may be `.wiki/` after `limbic:structure`. Dispatch owns worktree creation.
+    Do NOT use `isolation: "worktree"` — this creates worktrees from the session's git context, which may be `.wiki/` after `buehler:structure`. Dispatch owns worktree creation.
 ```
 
 - [ ] **Step 4: Add dry-run section between Step 5a and Step 6**
@@ -446,7 +446,7 @@ git -C {repo_root} worktree prune
 
 Replace line 281 ("Use the Task tool"):
 ```
-5. **Use the Agent tool** — agents are spawned via `Agent` with `subagent_type: "limbic:implementer"`, NOT via bash. Do NOT use `isolation: "worktree"`.
+5. **Use the Agent tool** — agents are spawned via `Agent` with `subagent_type: "buehler:implementer"`, NOT via bash. Do NOT use `isolation: "worktree"`.
 ```
 
 - [ ] **Step 7: Commit**
@@ -501,7 +501,7 @@ Current:
 ```markdown
 ## Instructions
 
-1. Read the `agents/implementer.md` agent definition in the limbic plugin for your full procedure
+1. Read the `agents/implementer.md` agent definition in the buehler plugin for your full procedure
 2. Follow the 9-phase execution procedure exactly
 3. **Branch from and PR back to the FEATURE BRANCH**, not main
 4. Use TDD — write failing tests first for each scenario
@@ -516,7 +516,7 @@ New:
 ```markdown
 ## Instructions
 
-1. Read the `agents/implementer.md` agent definition in the limbic plugin for your full procedure
+1. Read the `agents/implementer.md` agent definition in the buehler plugin for your full procedure
 2. Follow the 9-phase execution procedure exactly
 3. **Your worktree is pre-created** at the path above — validate it, do not create a new one
 4. **Branch from and PR back to the FEATURE BRANCH**, not main
@@ -557,7 +557,7 @@ Current:
 ---
 name: implementer
 description: |
-  Use this agent to implement a single GitHub Issue in an isolated git worktree. Spawned by dispatch, never by humans directly. Each agent receives an issue number, branches from a feature branch (not main), reads the full context chain (wiki meta page, PRD, mustread issues, parent story, task), implements with TDD, creates a PR targeting the feature branch, records token calibration data, and reports structured results. Follows a 9-phase execution procedure. Examples: <example>Context: dispatch has identified issue #7 as ready for implementation. user: "Implement issue #7: Add user authentication middleware" assistant: "Spawning implementer agent for issue #7 in worktree .worktrees/limbic/7-add-auth-middleware, branching from feature/auth-v1.0" <commentary>dispatch spawns one implementer per ready issue, each in its own worktree branching from the feature branch.</commentary></example>
+  Use this agent to implement a single GitHub Issue in an isolated git worktree. Spawned by dispatch, never by humans directly. Each agent receives an issue number, branches from a feature branch (not main), reads the full context chain (wiki meta page, PRD, mustread issues, parent story, task), implements with TDD, creates a PR targeting the feature branch, records token calibration data, and reports structured results. Follows a 9-phase execution procedure. Examples: <example>Context: dispatch has identified issue #7 as ready for implementation. user: "Implement issue #7: Add user authentication middleware" assistant: "Spawning implementer agent for issue #7 in worktree .worktrees/buehler/7-add-auth-middleware, branching from feature/auth-v1.0" <commentary>dispatch spawns one implementer per ready issue, each in its own worktree branching from the feature branch.</commentary></example>
 model: opus
 ---
 ```
@@ -567,7 +567,7 @@ New:
 ---
 name: implementer
 description: |
-  Use this agent to implement a single GitHub Issue in an isolated git worktree. Spawned by dispatch, never by humans directly. Each agent receives an issue number, branches from a feature branch (not main), reads the full context chain (wiki meta page, PRD, mustread issues, parent story, task), implements with TDD, creates a PR targeting the feature branch, records token calibration data, and reports structured results. Follows a 9-phase execution procedure. Examples: <example>Context: dispatch has identified issue #7 as ready for implementation. user: "Implement issue #7: Add user authentication middleware" assistant: "Spawning implementer agent for issue #7 in worktree .worktrees/limbic/7-add-auth-middleware, branching from feature/auth-v1.0" <commentary>dispatch spawns one implementer per ready issue, each in its own worktree branching from the feature branch.</commentary></example>
+  Use this agent to implement a single GitHub Issue in an isolated git worktree. Spawned by dispatch, never by humans directly. Each agent receives an issue number, branches from a feature branch (not main), reads the full context chain (wiki meta page, PRD, mustread issues, parent story, task), implements with TDD, creates a PR targeting the feature branch, records token calibration data, and reports structured results. Follows a 9-phase execution procedure. Examples: <example>Context: dispatch has identified issue #7 as ready for implementation. user: "Implement issue #7: Add user authentication middleware" assistant: "Spawning implementer agent for issue #7 in worktree .worktrees/buehler/7-add-auth-middleware, branching from feature/auth-v1.0" <commentary>dispatch spawns one implementer per ready issue, each in its own worktree branching from the feature branch.</commentary></example>
 model: opus
 permissionMode: dontAsk
 ---
@@ -579,12 +579,12 @@ Replace line 26:
 
 Current:
 ```
-5. **Worktree path** (e.g., `.worktrees/limbic/7-add-auth-middleware`)
+5. **Worktree path** (e.g., `.worktrees/buehler/7-add-auth-middleware`)
 ```
 
 New:
 ```
-5. **Worktree path** (pre-created absolute path, e.g., `/Users/dev/project/.worktrees/limbic/7-add-auth-middleware`)
+5. **Worktree path** (pre-created absolute path, e.g., `/Users/dev/project/.worktrees/buehler/7-add-auth-middleware`)
 ```
 
 - [ ] **Step 3: Rewrite Rule 1**
@@ -691,11 +691,11 @@ updated to reflect dispatch owning worktree creation."
 - [ ] **Step 1: Run the full preflight suite**
 
 ```bash
-cd /Users/traviscorrigan/Documents/GitHub/limbic && bash scripts/preflight-checks/runner.sh
+cd /Users/traviscorrigan/Documents/GitHub/buehler && bash scripts/preflight-checks/runner.sh
 ```
 
-Since this is the plugin repo (no `.github/limbic.yaml`, no `.claude/settings.json`), we expect:
-- `config.exists`: fail (no limbic.yaml — correct)
+Since this is the plugin repo (no `.github/buehler.yaml`, no `.claude/settings.json`), we expect:
+- `config.exists`: fail (no buehler.yaml — correct)
 - No `repo_root` line (correct — config missing)
 - `permissions.settings_exists`: fail (no settings.json — correct)
 - All other checks may fail or be skipped
@@ -711,7 +711,7 @@ bash scripts/preflight-checks/check-permissions.sh
 Expected: fail on missing settings file, clean JSONL output.
 
 ```bash
-OWNER=corrigantj REPO=limbic bash scripts/preflight-checks/check-wiki.sh
+OWNER=corrigantj REPO=buehler bash scripts/preflight-checks/check-wiki.sh
 ```
 
 Expected: wiki checks plus the new `wiki.gitignore` check (fail since no .gitignore in this repo with .wiki/ entry).

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add lightweight backlog capture, brainstorming awareness, and promotion lifecycle to limbic.
+**Goal:** Add lightweight backlog capture, brainstorming awareness, and promotion lifecycle to buehler.
 
 **Architecture:** Three discrete changes — a new Mode 3 on the issue skill for quick capture, a standalone PreToolUse hook that injects backlog count when brainstorming is invoked, and a new promotion step in the structure skill that closes backlog items when they become real stories.
 
@@ -475,13 +475,13 @@ to:
 In `CLAUDE.md`, change the Skill Reference table entry for issue from:
 
 ```markdown
-| `limbic:issue` | Ad-hoc issue creation, investigation, triage, and fix execution |
+| `buehler:issue` | Ad-hoc issue creation, investigation, triage, and fix execution |
 ```
 
 to:
 
 ```markdown
-| `limbic:issue` | Ad-hoc issue creation, investigation, triage, fix execution, and backlog capture |
+| `buehler:issue` | Ad-hoc issue creation, investigation, triage, fix execution, and backlog capture |
 ```
 
 - [ ] **Step 3: Add backlog routing to session-start.sh**
@@ -489,14 +489,14 @@ to:
 In `hooks/session-start.sh`, add a new row to the routing table. Change:
 
 ```
-| \"Fix issue #N\" | limbic:issue |
+| \"Fix issue #N\" | buehler:issue |
 ```
 
 to:
 
 ```
-| \"Fix issue #N\" | limbic:issue |
-| \"Backlog\" / \"Remember this idea\" / \"Quick capture\" | limbic:issue (backlog mode) |
+| \"Fix issue #N\" | buehler:issue |
+| \"Backlog\" / \"Remember this idea\" / \"Quick capture\" | buehler:issue (backlog mode) |
 ```
 
 - [ ] **Step 4: Commit**
@@ -531,7 +531,7 @@ Expected: all pass.
 - [ ] **Step 2: Verify the hook passthrough for non-brainstorming skills**
 
 ```bash
-echo '{"skill":"limbic:structure"}' | bash hooks/backlog-context.sh
+echo '{"skill":"buehler:structure"}' | bash hooks/backlog-context.sh
 ```
 
 Expected:

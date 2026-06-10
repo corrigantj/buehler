@@ -2,11 +2,11 @@
 
 **Date:** 2026-03-17
 **Status:** Draft
-**Epic:** limbic plugin enhancement
+**Epic:** buehler plugin enhancement
 
 ## Problem
 
-limbic creates issues via `limbic:structure` and manages their lifecycle through labels and milestones, but there is no visual project board. Issues have nowhere to live as a kanban. Both the developer and stakeholders lack a shared, visual dashboard of work status outside the CLI.
+buehler creates issues via `buehler:structure` and manages their lifecycle through labels and milestones, but there is no visual project board. Issues have nowhere to live as a kanban. Both the developer and stakeholders lack a shared, visual dashboard of work status outside the CLI.
 
 ## Goals
 
@@ -33,11 +33,11 @@ A single GitHub Project board is created per repository, shared across all epics
 | Column | Trigger | Managed by |
 |--------|---------|------------|
 | Ready | "Item added to project" workflow automation | GitHub automation (setup guides user to configure) |
-| In Progress | `status:in-progress` label added | `limbic:dispatch` sets via API |
+| In Progress | `status:in-progress` label added | `buehler:dispatch` sets via API |
 | In Review | `status:in-review` label added | `implementer` agent sets via API |
 | Done | Issue closed | GitHub automation (setup guides user to configure) |
 
-No Backlog column. Limbic's dispatch handles prioritization and batching.
+No Backlog column. Buehler's dispatch handles prioritization and batching.
 
 Blocked issues remain in their current column with the `status:blocked` label as a visual indicator — no separate Blocked column.
 
@@ -56,7 +56,7 @@ The setup wizard recommends the repo name as the board title but asks the user t
 
 ## Configuration Changes
 
-New fields in `.github/limbic.yaml` under the existing `project` key:
+New fields in `.github/buehler.yaml` under the existing `project` key:
 
 ```yaml
 project:
@@ -75,7 +75,7 @@ New script: `scripts/preflight-checks/check-project.sh`
 
 Three checks:
 
-1. **`project.exists`** — verify `board_number` is present in config. If absent, emit fail with fix suggestion to run `limbic:setup`. If present, verify the board exists and is linked to the repo via `gh project view`. If the board is missing or not linked, emit fail. Board setup is mandatory — all gated skills (structure, dispatch, review, integrate) require it.
+1. **`project.exists`** — verify `board_number` is present in config. If absent, emit fail with fix suggestion to run `buehler:setup`. If present, verify the board exists and is linked to the repo via `gh project view`. If the board is missing or not linked, emit fail. Board setup is mandatory — all gated skills (structure, dispatch, review, integrate) require it.
 
 2. **`project.linked`** — verify the project is linked to the repository (not just that it exists). An unlinked board won't trigger "Item added" automations correctly. Check via `gh project view {board_number} --owner {owner} --format json` and verify the repo appears in linked repositories.
 
@@ -145,14 +145,14 @@ The `gh project item-edit` command requires GraphQL node IDs for the project, th
 
 **Who resolves what:**
 
-- **`limbic:dispatch`** resolves IDs 1-3 once per invocation (they don't change between issues), then resolves item IDs per issue. Dispatch also passes all resolved IDs (project node ID, field ID, option ID for "In Review") to each implementer agent via the agent prompt, so the implementer only needs to resolve its own item ID.
+- **`buehler:dispatch`** resolves IDs 1-3 once per invocation (they don't change between issues), then resolves item IDs per issue. Dispatch also passes all resolved IDs (project node ID, field ID, option ID for "In Review") to each implementer agent via the agent prompt, so the implementer only needs to resolve its own item ID.
 - **`implementer` agent** receives pre-resolved IDs from dispatch. Only queries its own item ID at runtime.
 
 This minimizes API calls: dispatch does one field-list query, implementer agents do one item-list query each.
 
 ## Skill Changes
 
-### `limbic:structure`
+### `buehler:structure`
 
 After creating all issues (stories + tasks) and assigning to the milestone:
 
@@ -167,7 +167,7 @@ After creating all issues (stories + tasks) and assigning to the milestone:
 
 No conditional board checks — if structure is executing, preflight already passed and validated the board.
 
-### `limbic:dispatch`
+### `buehler:dispatch`
 
 After labeling each dispatched issue `status:in-progress`:
 
@@ -186,11 +186,11 @@ After creating the PR and updating labels to `status:in-review` (Phase 8):
 2. Query its own item ID via `gh project item-list`
 3. Set the Status field to "In Review": `gh project item-edit --id {item_id} --field-id {status_field_id} --project-id {project_id} --single-select-option-id {in_review_option_id}`
 
-### `limbic:review`
+### `buehler:review`
 
 No board changes. Issue closure triggers the "Item closed → Done" workflow automation automatically.
 
-### `limbic:status`
+### `buehler:status`
 
 Include the board URL in the dashboard output:
 ```
@@ -199,7 +199,7 @@ Include the board URL in the dashboard output:
 
 The URL path segment (`users/` vs `orgs/`) depends on whether `owner` is a personal account or an organization. Determine at runtime: `gh api users/{owner} --jq '.type'` returns `"User"` or `"Organization"`.
 
-### `limbic:integrate`
+### `buehler:integrate`
 
 No board changes. Completed issues stay in the Done column. The board persists across epics.
 
@@ -221,7 +221,7 @@ The setup wizard provides the exact URL and step-by-step instructions. These onl
 | `skills/dispatch/SKILL.md` | Set board Status to "In Progress" |
 | `agents/implementer.md` | Set board Status to "In Review" |
 | `skills/status/SKILL.md` | Show board URL in dashboard |
-| `templates/limbic.yaml` | Add `board_number` and `board_title` fields |
+| `templates/buehler.yaml` | Add `board_number` and `board_title` fields |
 | `scripts/preflight-checks/check-project.sh` | New preflight script |
 | `scripts/preflight-checks/runner.sh` | Add `run_check "project" "${SCRIPT_DIR}/check-project.sh"` |
 | `CLAUDE.md` | Update plugin structure and references |

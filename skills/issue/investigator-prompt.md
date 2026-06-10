@@ -1,6 +1,6 @@
 # Investigator Prompt Template
 
-This template is filled by `limbic:issue` when the human explicitly chooses
+This template is filled by `buehler:issue` when the human explicitly chooses
 "Run investigation" at the capture gate. The skill replaces all `{placeholders}`
 before spawning the agent.
 
@@ -50,11 +50,11 @@ an `<!-- Investigation pending -->` placeholder that you will replace.
 ## Invocation Context
 
 - **Interactive:** {interactive_flag}
-- **Invoked by:** limbic:issue (capture gate)
+- **Invoked by:** buehler:issue (capture gate)
 
 ## Instructions
 
-1. Read the `agents/investigator.md` agent definition in the limbic plugin for your full procedure
+1. Read the `agents/investigator.md` agent definition in the buehler plugin for your full procedure
 2. Follow the 6-phase execution procedure exactly
 3. **Never fix the issue** — investigate, document, recommend only
 4. **Never create a new issue** — the skill already created #{issue_number}; you enrich it

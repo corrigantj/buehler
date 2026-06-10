@@ -6,10 +6,10 @@
 
 ## Summary
 
-Add a lightweight backlog capture and lifecycle to limbic. Backlog items are GitHub issues with no milestone — "digital sticky notes" that can be quickly created, surfaced during brainstorming, and promoted into structured work during milestone planning.
+Add a lightweight backlog capture and lifecycle to buehler. Backlog items are GitHub issues with no milestone — "digital sticky notes" that can be quickly created, surfaced during brainstorming, and promoted into structured work during milestone planning.
 
 Three components:
-1. **Quick capture** — new `backlog` mode on `limbic:issue`
+1. **Quick capture** — new `backlog` mode on `buehler:issue`
 2. **Brainstorming awareness** — standalone PreToolUse hook injects backlog count when `superpowers:brainstorming` is invoked
 3. **Promotion during structure** — close backlog items with cross-references when they become real stories/tasks
 
@@ -113,7 +113,7 @@ This runs alongside `preflight.sh` — both match on `Skill`, both execute indep
 
 ### Design Decisions
 
-- **Standalone hook, not part of preflight.sh** — separation of concerns. Preflight gates limbic skills; this injects context into a superpowers skill.
+- **Standalone hook, not part of preflight.sh** — separation of concerns. Preflight gates buehler skills; this injects context into a superpowers skill.
 - **Count-only query first** — avoids fetching full issue list when there are no backlog items. The full fetch only happens if the user opts in during brainstorming.
 - **`systemMessage` contains the follow-up query** — Claude knows how to fetch the details if the user says yes, without the hook needing to pre-fetch everything.
 
@@ -176,7 +176,7 @@ For each promoted backlog item:
 |------|--------|
 | `superpowers:brainstorming` | Not our plugin; context injection via hook is sufficient |
 | `scripts/preflight-checks/check-labels.sh` | `backlog:*` labels already exist |
-| `templates/limbic.yaml` | No new configuration needed |
+| `templates/buehler.yaml` | No new configuration needed |
 | `agents/implementer.md` | Backlog items are not dispatched |
 
 ## Out of Scope

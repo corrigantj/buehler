@@ -4,7 +4,7 @@
 node_modules/
 transcripts/*
 
-# PM working files — used when managing this repo with limbic itself.
+# PM working files — used when managing this repo with buehler itself.
 # These are project-specific and should not ship with the plugin.
-.github/limbic.yaml
+.github/buehler.yaml
 .wiki/

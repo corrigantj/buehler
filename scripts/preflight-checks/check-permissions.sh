@@ -17,7 +17,7 @@ emit() {
 # permissions.settings_exists
 if [ ! -f "$SETTINGS_PATH" ]; then
   emit "permissions.settings_exists" "fail" "No ${SETTINGS_PATH} found — subagents will not have Bash permissions" \
-    "Run limbic:setup to configure subagent permissions"
+    "Run buehler:setup to configure subagent permissions"
   exit 0
 fi
 emit "permissions.settings_exists" "pass" "Settings file found: ${SETTINGS_PATH}"
@@ -32,7 +32,7 @@ allow_list=$(jq -r '.permissions.allow[]? // empty' "$SETTINGS_PATH" 2>/dev/null
 
 if [ -z "$allow_list" ]; then
   emit "permissions.bash_access" "fail" "No permissions.allow entries in ${SETTINGS_PATH} — subagents cannot run shell commands" \
-    "Run limbic:setup to configure subagent permissions"
+    "Run buehler:setup to configure subagent permissions"
   exit 0
 fi
 
@@ -56,5 +56,5 @@ if [ ${#missing[@]} -eq 0 ]; then
 else
   missing_str=$(IFS=", "; echo "${missing[*]}")
   emit "permissions.bash_access" "fail" "Missing Bash permissions for subagents: ${missing_str}" \
-    "Run limbic:setup to configure subagent permissions — agents need at minimum Bash(git:*), Bash(gh:*), and Bash(gh issue *)"
+    "Run buehler:setup to configure subagent permissions — agents need at minimum Bash(git:*), Bash(gh:*), and Bash(gh issue *)"
 fi

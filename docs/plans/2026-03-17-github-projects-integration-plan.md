@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add GitHub Projects board integration to limbic so issues are visually tracked on a four-column kanban (Ready, In Progress, In Review, Done).
+**Goal:** Add GitHub Projects board integration to buehler so issues are visually tracked on a four-column kanban (Ready, In Progress, In Review, Done).
 
-**Architecture:** One board per repo, created by setup, populated by structure, with status transitions driven by dispatch and implementer via `gh project item-edit`. GitHub's built-in workflow automations handle item-added→Ready and item-closed→Done; limbic handles the two intermediate transitions.
+**Architecture:** One board per repo, created by setup, populated by structure, with status transitions driven by dispatch and implementer via `gh project item-edit`. GitHub's built-in workflow automations handle item-added→Ready and item-closed→Done; buehler handles the two intermediate transitions.
 
 **Tech Stack:** `gh project` CLI, GitHub GraphQL API (for `linkProjectV2ToRepository`), bash (preflight script)
 
@@ -28,7 +28,7 @@ Follow the same pattern as `check-env.sh` (emit function, JSONL output, `set -eu
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG_PATH="${CONFIG_PATH:-.github/limbic.yaml}"
+CONFIG_PATH="${CONFIG_PATH:-.github/buehler.yaml}"
 OWNER="${OWNER:-}"
 
 emit() {
@@ -60,14 +60,14 @@ fi
 # project.exists — board_number must be in config
 if [ -z "$board_number" ]; then
   emit "project.exists" "fail" "No board_number in config" \
-    "Run limbic:setup to create a GitHub Project board"
+    "Run buehler:setup to create a GitHub Project board"
   exit 0
 fi
 
 # Verify the board actually exists
 if ! gh project view "$board_number" --owner "$OWNER" --format json &>/dev/null; then
   emit "project.exists" "fail" "Project board #${board_number} not found for owner ${OWNER}" \
-    "Run limbic:setup to create or reconfigure the project board"
+    "Run buehler:setup to create or reconfigure the project board"
   exit 0
 fi
 emit "project.exists" "pass" "Project board #${board_number} exists"
@@ -100,7 +100,7 @@ if echo "$linked_repos" | grep -qx "${REPO}"; then
   emit "project.linked" "pass" "Project board is linked to ${OWNER}/${REPO}"
 else
   emit "project.linked" "fail" "Project board #${board_number} is not linked to ${OWNER}/${REPO}" \
-    "Run limbic:setup to link the project board to this repository"
+    "Run buehler:setup to link the project board to this repository"
 fi
 
 # project.status_field — verify Status field has expected options
@@ -140,7 +140,7 @@ Make the script executable: `chmod +x scripts/preflight-checks/check-project.sh`
 
 - [ ] **Step 2: Test the script locally**
 
-Run: `OWNER=corrigantj REPO=limbic CONFIG_PATH=.github/limbic.yaml bash scripts/preflight-checks/check-project.sh`
+Run: `OWNER=corrigantj REPO=buehler CONFIG_PATH=.github/buehler.yaml bash scripts/preflight-checks/check-project.sh`
 
 Expected: fail on `project.exists` (no board_number in config yet). Each line should be valid JSONL.
 
@@ -167,31 +167,31 @@ git commit -m "feat(preflight): add check-project.sh — verify board exists, li
 
 ---
 
-### Task 2: Add board config fields to `templates/limbic.yaml`
+### Task 2: Add board config fields to `templates/buehler.yaml`
 
 **Files:**
-- Modify: `templates/limbic.yaml:8-11` (add board_number and board_title under project)
+- Modify: `templates/buehler.yaml:8-11` (add board_number and board_title under project)
 
 - [ ] **Step 1: Add new fields to the project section**
 
 After line 11 (`base_branch: ""`), add:
 
 ```yaml
-  board_number:    # GitHub Project number (populated by limbic:setup)
-  board_title: ""  # GitHub Project title (populated by limbic:setup)
+  board_number:    # GitHub Project number (populated by buehler:setup)
+  board_title: ""  # GitHub Project title (populated by buehler:setup)
 ```
 
 - [ ] **Step 2: Verify YAML is valid**
 
-Run: `python3 -c "import yaml; yaml.safe_load(open('templates/limbic.yaml'))"`
+Run: `python3 -c "import yaml; yaml.safe_load(open('templates/buehler.yaml'))"`
 
 Expected: no errors.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add templates/limbic.yaml
-git commit -m "feat(config): add board_number and board_title to limbic.yaml template"
+git add templates/buehler.yaml
+git commit -m "feat(config): add board_number and board_title to buehler.yaml template"
 ```
 
 ---
@@ -467,7 +467,7 @@ In `skills/status/SKILL.md`, in the Step 4 dashboard template, after the Wiki se
 
 - [ ] **Step 2: Add board_number to Step 1 config reading**
 
-The status skill needs to read `project.board_number` from config. It currently auto-detects owner/repo from milestones. Add a note to read board_number from `limbic.yaml` if available.
+The status skill needs to read `project.board_number` from config. It currently auto-detects owner/repo from milestones. Add a note to read board_number from `buehler.yaml` if available.
 
 - [ ] **Step 3: Commit**
 

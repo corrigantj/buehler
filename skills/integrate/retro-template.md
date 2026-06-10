@@ -1,6 +1,6 @@
 # Retrospective Wiki Page Template
 
-Used by `limbic:integrate` when creating retrospective pages in the GitHub Wiki
+Used by `buehler:integrate` when creating retrospective pages in the GitHub Wiki
 after a milestone is completed and merged. Replace `{placeholders}` with actual content.
 
 ---
@@ -47,7 +47,7 @@ after a milestone is completed and merged. Replace `{placeholders}` with actual 
 
 ### Calibration Recommendations
 
-{Based on the data above, recommended adjustments to sizing buckets in limbic.yaml.}
+{Based on the data above, recommended adjustments to sizing buckets in buehler.yaml.}
 
 | Bucket | Current Range | Proposed Range | Reason |
 |--------|--------------|----------------|--------|

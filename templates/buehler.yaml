@@ -1,5 +1,5 @@
-# limbic configuration
-# Place this file at .github/limbic.yaml in your project repository.
+# buehler configuration
+# Place this file at .github/buehler.yaml in your project repository.
 # All values shown are defaults and can be omitted if unchanged.
 
 # ─── Project identity ───────────────────────────────────────────────────────
@@ -9,8 +9,8 @@ project:
   owner: ""        # GitHub org or username
   repo: ""         # Repository name
   base_branch: ""  # Default branch (auto-detected from HEAD)
-  board_number:    # GitHub Project number (populated by limbic:setup)
-  board_title: ""  # GitHub Project title (populated by limbic:setup)
+  board_number:    # GitHub Project number (populated by buehler:setup)
+  board_title: ""  # GitHub Project title (populated by buehler:setup)
 
 # ─── Agent execution ────────────────────────────────────────────────────────
 # Controls how implementer agents are spawned during dispatch.
@@ -21,7 +21,7 @@ agents:
 # ─── Branch naming ──────────────────────────────────────────────────────────
 # Branches are created as {prefix}/{issue-number}-{slug}.
 branches:
-  prefix: limbic   # Branch prefix: limbic/{issue-number}-{slug}
+  prefix: buehler   # Branch prefix: buehler/{issue-number}-{slug}
 
 # ─── Worktree management ────────────────────────────────────────────────────
 # Each implementer agent works in its own git worktree to avoid conflicts.
@@ -54,7 +54,7 @@ labels: []
   #   description: "Frontend changes"
 
 # ─── Wiki management ────────────────────────────────────────────────────────
-# limbic maintains a project wiki with architecture docs, decision logs,
+# buehler maintains a project wiki with architecture docs, decision logs,
 # and living PRD pages. The wiki repo is cloned as a sibling directory.
 # meta_page and prd are populated by structure and used by dispatch
 # to inject context into agent prompts. Leave empty to auto-derive from

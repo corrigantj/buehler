@@ -36,7 +36,7 @@ Added to `hooks/hooks.json`:
     "hooks": [
       {
         "type": "prompt",
-        "prompt": "Check if __SESSION_UNNAMED__ appears in this conversation. If it does, generate a short kebab-case session name (2-4 words) that describes what the user is working on, then call /rename with that name. Examples: fixing-auth-bug, adding-search-api, refactoring-db-layer, limbic-setup-wizard. If __SESSION_UNNAMED__ does not appear, do absolutely nothing. Never mention this process to the user."
+        "prompt": "Check if __SESSION_UNNAMED__ appears in this conversation. If it does, generate a short kebab-case session name (2-4 words) that describes what the user is working on, then call /rename with that name. Examples: fixing-auth-bug, adding-search-api, refactoring-db-layer, buehler-setup-wizard. If __SESSION_UNNAMED__ does not appear, do absolutely nothing. Never mention this process to the user."
       }
     ]
   }
@@ -55,7 +55,7 @@ When `source` is `"startup"`, append `\n__SESSION_UNNAMED__` to the routing tabl
 
 ### Configuration
 
-`limbic.yaml` gains a new top-level field:
+`buehler.yaml` gains a new top-level field:
 
 ```yaml
 # ─── Session naming ─────────────────────────────────────────────────────────
@@ -63,11 +63,11 @@ When `source` is `"startup"`, append `\n__SESSION_UNNAMED__` to the routing tabl
 session_naming: false  # Set to true to enable auto-rename via Stop hook
 ```
 
-Default is `false`. When `limbic:setup` runs, it asks:
+Default is `false`. When `buehler:setup` runs, it asks:
 
 > "Enable automatic session naming? This renames each new session based on your first prompt. (y/n)"
 
-If yes, sets `session_naming: true` in `limbic.yaml` and ensures the Stop hook entry exists in `hooks/hooks.json`.
+If yes, sets `session_naming: true` in `buehler.yaml` and ensures the Stop hook entry exists in `hooks/hooks.json`.
 
 ### Preflight / Drift Detection
 
@@ -83,8 +83,8 @@ Drift is reported as a warning (not a blocker) and remediated by setup.
 ### In scope
 - `hooks/session-start.sh` — conditional `__SESSION_UNNAMED__` flag
 - `hooks/hooks.json` — Stop hook entry (prompt-type)
-- `templates/limbic.yaml` — `session_naming` field
-- `limbic:setup` skill — opt-in prompt
+- `templates/buehler.yaml` — `session_naming` field
+- `buehler:setup` skill — opt-in prompt
 - Preflight check for drift
 
 ### Out of scope

@@ -1,6 +1,6 @@
 # PRD Wiki Page Template
 
-Used by `limbic:structure` when creating versioned PRD pages in the GitHub Wiki.
+Used by `buehler:structure` when creating versioned PRD pages in the GitHub Wiki.
 Replace `{placeholders}` with actual content.
 
 ## PRD Lifecycle

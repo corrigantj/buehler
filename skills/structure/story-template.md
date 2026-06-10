@@ -1,6 +1,6 @@
 # Story Template
 
-Used by `limbic:structure` when creating product story Issues. Replace `{placeholders}` with actual content.
+Used by `buehler:structure` when creating product story Issues. Replace `{placeholders}` with actual content.
 
 ---
 

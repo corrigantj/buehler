@@ -2,11 +2,11 @@
 
 **Date:** 2026-03-24
 **Status:** Design
-**Scope:** limbic plugin — new skill (`limbic:issue`), new agent (`agents/investigator.md`), label taxonomy, stabilization workflow, preflight checks
+**Scope:** buehler plugin — new skill (`buehler:issue`), new agent (`agents/investigator.md`), label taxonomy, stabilization workflow, preflight checks
 
 ## Problem
 
-The limbic plugin currently creates all issues in structured batches via `limbic:structure` (PRD → stories → tasks). There is no way to:
+The buehler plugin currently creates all issues in structured batches via `buehler:structure` (PRD → stories → tasks). There is no way to:
 
 1. Capture bugs discovered during development, testing, review, or post-integration use
 2. Capture insights that lead to new work (enhancements, refactors) outside the PRD workflow
@@ -25,7 +25,7 @@ I want to exit this milestone. If there are issues, I need to fix them before I 
 
 Follows the existing dispatch/implementer pattern:
 
-- **`limbic:issue` (skill)** — Thin dispatcher. Captures human input, spawns the investigator agent, handles the approval interaction on return.
+- **`buehler:issue` (skill)** — Thin dispatcher. Captures human input, spawns the investigator agent, handles the approval interaction on return.
 - **`agents/investigator.md` (agent)** — Full pipeline: parse → detect context → dedup → create issue → investigate → recommend severity/priority → report.
 
 All real work happens in the subagent to keep the main session context window clean.
@@ -52,7 +52,7 @@ For an already-investigated issue. The skill spawns a fix-mode agent that:
 - **Vibe mode:** fixes directly on the base branch with TDD, commits with `Fixes #{N}`, closes issue
 - **PR mode:** creates a branch, implements with TDD, creates a PR targeting the appropriate branch, leaves issue open for human merge
 
-The human can also batch investigated issues and run `limbic:dispatch` instead.
+The human can also batch investigated issues and run `buehler:dispatch` instead.
 
 ### 3. Investigator Agent Execution Phases
 
@@ -88,7 +88,7 @@ Minimal spike — fast capture before investigation begins. Uses the existing `s
 - Title: concise summary
 - Body: template-appropriate format with parent link (stabilization ticket if applicable, none otherwise)
 - Labels: `type:bug` or `type:task` (defect vs enhancement)
-- If in stabilization context: create as sub-issue of stabilization ticket (via GitHub Sub-issues API, falling back to `<!-- limbic:parent #N -->`)
+- If in stabilization context: create as sub-issue of stabilization ticket (via GitHub Sub-issues API, falling back to `<!-- buehler:parent #N -->`)
 - If a related feature story is identifiable: include a URL link in the description for progressive context loading
 
 **Phase 6: Context Load**
@@ -149,7 +149,7 @@ result:
 
 ### 4. Label Taxonomy: Adding Severity
 
-New `severity:` labels added to the hardcoded default taxonomy in `scripts/preflight-checks/check-labels.sh`, consistent with how existing taxonomy labels (`priority:`, `size:`, `status:`, `type:`, `backlog:`) are defined. The `labels:` key in `limbic.yaml` is reserved for user-defined custom labels and is not used for the default taxonomy.
+New `severity:` labels added to the hardcoded default taxonomy in `scripts/preflight-checks/check-labels.sh`, consistent with how existing taxonomy labels (`priority:`, `size:`, `status:`, `type:`, `backlog:`) are defined. The `labels:` key in `buehler.yaml` is reserved for user-defined custom labels and is not used for the default taxonomy.
 
 New severity labels:
 
@@ -167,38 +167,38 @@ Existing `priority:` labels unchanged.
 A stabilization ticket is created deterministically at milestone creation time, not lazily by the investigator.
 
 **Script: `scripts/create-stabilization-ticket.sh`**
-- Called by `limbic:structure` after milestone creation
+- Called by `buehler:structure` after milestone creation
 - Creates a `type:task` issue titled "Stabilization: {epic}-v{Major}.{Minor}"
 - Assigned to the milestone
-- Labeled with `meta:ignore` to prevent `limbic:dispatch` from picking it up as a dispatchable task
+- Labeled with `meta:ignore` to prevent `buehler:dispatch` from picking it up as a dispatchable task
 - Body contains a link to the feature's wiki meta page
 - Idempotent — if one already exists for this milestone, no-op
 
 **Preflight check: `scripts/preflight-checks/check-stabilization.sh`**
 - For each open milestone, verify a stabilization ticket exists
 - Emits JSONL warning/failure if missing
-- `limbic:setup` can remediate drift by creating missing stabilization tickets
+- `buehler:setup` can remediate drift by creating missing stabilization tickets
 
 **Stabilization context detection** (by the investigator agent):
 - Explicit: human says "stabilization" or "stabilize" in their description
 - Implicit: a stabilization ticket already exists for the active milestone and human references it
 - Otherwise: standalone issue, no parent
 
-**Exit criteria:** The milestone can be exited when all children of the stabilization ticket are closed. `limbic:integrate` checks this in its pre-integration audit.
+**Exit criteria:** The milestone can be exited when all children of the stabilization ticket are closed. `buehler:integrate` checks this in its pre-integration audit.
 
 ### 6. Integration with Existing Skills
 
-**`limbic:structure`** — After Step 7 (Create Milestone), add a new sub-step (7a) with instructions to create the stabilization ticket by running `create-stabilization-ticket.sh` or creating the ticket via `gh` directly, consistent with how the rest of the structure skill operates. No other changes.
+**`buehler:structure`** — After Step 7 (Create Milestone), add a new sub-step (7a) with instructions to create the stabilization ticket by running `create-stabilization-ticket.sh` or creating the ticket via `gh` directly, consistent with how the rest of the structure skill operates. No other changes.
 
-**`limbic:status`** — Shows the stabilization ticket with its children in the dashboard, same grouping pattern as stories with tasks. Includes severity labels in display.
+**`buehler:status`** — Shows the stabilization ticket with its children in the dashboard, same grouping pattern as stories with tasks. Includes severity labels in display.
 
-**`limbic:dispatch`** — No changes. Investigated issues have the right shape (affected files, parent link, milestone) to be dispatched normally.
+**`buehler:dispatch`** — No changes. Investigated issues have the right shape (affected files, parent link, milestone) to be dispatched normally.
 
-**`limbic:review`** — No changes. PRs from `/issue fix` flow through the normal review pipeline.
+**`buehler:review`** — No changes. PRs from `/issue fix` flow through the normal review pipeline.
 
-**`limbic:integrate`** — Pre-integration audit (step 1) additionally checks: if a stabilization ticket exists, are all its children closed? If not, flag as blockers.
+**`buehler:integrate`** — Pre-integration audit (step 1) additionally checks: if a stabilization ticket exists, are all its children closed? If not, flag as blockers.
 
-**`limbic:setup`** — Adds `severity:` labels to label creation/verification. Preflight checks validate they exist. Remediates missing stabilization tickets for existing milestones.
+**`buehler:setup`** — Adds `severity:` labels to label creation/verification. Preflight checks validate they exist. Remediates missing stabilization tickets for existing milestones.
 
 **Implementer agent** — No changes. Its lightweight bug-filing behavior stays as-is. Those bugs are visible to `/issue` during dedup.
 
@@ -207,7 +207,7 @@ A stabilization ticket is created deterministically at milestone creation time, 
 New files:
 
 ```
-limbic/
+buehler/
 ├── skills/
 │   └── issue/
 │       ├── SKILL.md                # Thin dispatcher: capture input, spawn agent, handle approval
@@ -222,7 +222,7 @@ limbic/
 
 The relationship between `investigator-prompt.md` and `agents/investigator.md` mirrors the existing `dispatch/implementer-prompt.md` and `agents/implementer.md` pattern: the agent file defines the static persona, rules, and execution phases; the prompt template is filled by the skill with dynamic context (human description, repo info, milestone data) and injected into the agent spawn call.
 
-**Migration note:** Existing milestones (created before this feature) will not have stabilization tickets. The `check-stabilization.sh` preflight check will flag these as warnings. Running `limbic:setup` will remediate by backfilling stabilization tickets for any open milestones missing them.
+**Migration note:** Existing milestones (created before this feature) will not have stabilization tickets. The `check-stabilization.sh` preflight check will flag these as warnings. Running `buehler:setup` will remediate by backfilling stabilization tickets for any open milestones missing them.
 
 Changes to existing files:
 
@@ -232,17 +232,17 @@ Changes to existing files:
 | `scripts/preflight-checks/runner.sh` | Include `check-stabilization.sh` |
 | `skills/structure/SKILL.md` | Add Step 7a: create stabilization ticket after milestone creation |
 | `skills/integrate/SKILL.md` | Add stabilization ticket children check to pre-integration audit (Step 1) |
-| `hooks/session-start.sh` | Add `/issue` routing: `"File a bug" / "Report issue" / "Investigate" / "Fix issue"` → `limbic:issue` |
+| `hooks/session-start.sh` | Add `/issue` routing: `"File a bug" / "Report issue" / "Investigate" / "Fix issue"` → `buehler:issue` |
 | `CLAUDE.md` | Update plugin structure and skill reference table |
 
 ### 8. Procedural Context: Stabilization Loop
 
-The `/issue` skill enables a stabilization loop that fits between `limbic:integrate` (or `limbic:review`) and milestone exit:
+The `/issue` skill enables a stabilization loop that fits between `buehler:integrate` (or `buehler:review`) and milestone exit:
 
 1. **Deploy** — Completed milestone work is deployed to an environment
 2. **Test/Review** — Automated evals, TDD, human review. Human provides feedback.
 3. **Capture** — `/issue {description}` for each problem or enhancement found. Agent investigates, recommends severity/priority, human approves.
-4. **Fix** — Human decides per-issue: `/issue fix #N` for single fixes, or `limbic:dispatch` for batches. Vibe mode (direct commit) or PR mode (human merge) auto-detected.
+4. **Fix** — Human decides per-issue: `/issue fix #N` for single fixes, or `buehler:dispatch` for batches. Vibe mode (direct commit) or PR mode (human merge) auto-detected.
 5. **Retest** — Another round of evaluation
 6. **Repeat** steps 3-5 until stabilization ticket children are all closed
-7. **Exit** — `limbic:integrate` confirms stabilization complete, proceeds with milestone close and retrospective
+7. **Exit** — `buehler:integrate` confirms stabilization complete, proceeds with milestone close and retrospective

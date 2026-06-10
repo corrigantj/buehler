@@ -9,9 +9,9 @@ description: Use after dispatch agents create PRs — polls for human review act
 
 ## Inputs
 
-- A feature branch with open task PRs (created by `limbic:dispatch`)
+- A feature branch with open task PRs (created by `buehler:dispatch`)
 - Access to the project repository (GitHub MCP + gh CLI)
-- Configuration from `.github/limbic.yaml` (review section)
+- Configuration from `.github/buehler.yaml` (review section)
 
 ## Checklist
 
@@ -69,7 +69,7 @@ Main agent receives review data. Route based on review state:
 - **Approved** -> proceed to Step 5
 - **Changes Requested** -> proceed to Step 4
 - **Comments only** (no formal review verdict) -> address comments, push, resume polling (back to Step 2)
-- **No reviews / Timeout** -> report to user and **wait for direction**. Never self-merge. If polling timed out, present: "No human reviews received within the polling window. Waiting for review on {PR list}. Ask the reviewer or extend `review.polling_timeout` in `.github/limbic.yaml`."
+- **No reviews / Timeout** -> report to user and **wait for direction**. Never self-merge. If polling timed out, present: "No human reviews received within the polling window. Waiting for review on {PR list}. Ask the reviewer or extend `review.polling_timeout` in `.github/buehler.yaml`."
 
 ### Step 4: Address Feedback
 
@@ -130,7 +130,7 @@ If no `## Lessons Learned` comment exists (e.g., agent crashed before posting), 
 
 After merge, update the parent story's Scenario Acceptance Tracker:
 
-1. Find the parent story (from `<!-- limbic:parent #NN -->` in the task body or sub-issue relationship)
+1. Find the parent story (from `<!-- buehler:parent #NN -->` in the task body or sub-issue relationship)
 2. For each scenario this task addressed, update the tracker table:
    - Status `-` to `done` and link the task/PR
    - If bugs were filed during implementation, status `-` to `bug` and link the bug issue
@@ -156,8 +156,8 @@ After all current PRs in this cycle are processed:
 ```
 
 3. Recommend next action:
-   - If newly unblocked tasks: "Run `limbic:dispatch` to start next batch"
-   - If all task PRs merged: "Run `limbic:integrate` to merge feature branch to main"
+   - If newly unblocked tasks: "Run `buehler:dispatch` to start next batch"
+   - If all task PRs merged: "Run `buehler:integrate` to merge feature branch to main"
    - If PRs still awaiting review: "Waiting for human review on {list}"
 
 ## Important Rules
@@ -168,5 +168,5 @@ After all current PRs in this cycle are processed:
 4. **Append review data to Lessons Learned on every merged PR** — no exceptions, this feeds the full retrospective
 5. **Polling sub-agent uses cheapest model** — it only detects changes, doesn't reason about code
 6. **If PR is closed/rejected** — report to user and stop processing that PR
-7. **All skill references** use `limbic:{skill}` format
+7. **All skill references** use `buehler:{skill}` format
 8. **All label references** use `:` delimiter

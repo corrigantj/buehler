@@ -1,6 +1,6 @@
 # Meta Wiki Page Template
 
-Used by `limbic:structure` when creating the canonical feature state page in the GitHub Wiki.
+Used by `buehler:structure` when creating the canonical feature state page in the GitHub Wiki.
 One per epic. Updated once per shipped version (~10 min maintenance).
 
 Replace `{placeholders}` with actual content.
